@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/csunibo/stackunibo/answers"
 	"github.com/csunibo/stackunibo/util"
 	"github.com/kataras/muxie"
 	"gorm.io/gorm"
@@ -17,8 +18,9 @@ type Document struct {
 
 type Question struct {
 	gorm.Model
-	Document Document `json:"document" gorm:"foreignKey:Document;references:ID"`
-	Coord    uint32   `json:"coord"`
+	Document string           `json:"document"`
+	Coord    uint32           `json:"coord"`
+	Answers  []answers.Answer `json:"answers" gorm:"foreignKey:Question;references:ID"`
 }
 
 type DocReq struct {
@@ -48,7 +50,7 @@ func handlePut(res http.ResponseWriter, req *http.Request) {
 	var questions []Question
 	for _, coord := range data.Coords {
 		question := Question{
-			Document: Document{ID: data.Document},
+			Document: data.Document,
 			Coord:    coord,
 		}
 		questions = append(questions, question)

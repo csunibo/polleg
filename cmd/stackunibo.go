@@ -57,7 +57,7 @@ func main() {
 		os.Exit(1)
 	}
 	db := util.GetDb()
-	if err := db.AutoMigrate(&documents.Document{}, &documents.Question{}, &answers.Answer{}).Error(); err != "" {
+	if err := db.AutoMigrate(&documents.Document{}, &documents.Question{}, &answers.Answer{}); err != nil {
 		slog.Error("AutoMigrate failed", "err", err)
 		os.Exit(1)
 	}
