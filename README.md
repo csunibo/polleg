@@ -6,5 +6,5 @@ Progetto che permette agli studenti di rispondere agli esercizi delle prove d'es
 ## Usage
 
 ```golang
-go run cmd/stackunibo.go cmd/cors.go
+go run cmd/stackunibo.go
 ```
