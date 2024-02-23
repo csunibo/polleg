@@ -16,3 +16,7 @@ type Answer struct {
 	upvotes        uint32     `json:"upvotes"`
 	downvotes      uint32     `json:"downvotes"`
 }
+
+func initilMigration(db *gorm.DB) {
+
+}
