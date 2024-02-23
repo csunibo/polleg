@@ -19,13 +19,20 @@ type Document struct {
 type Question struct {
 	gorm.Model
 	Document string           `json:"document"`
-	Coord    uint32           `json:"coord"`
+	Start    uint32           `json:"start"`
+	End      uint32           `json:"end"`
 	Answers  []answers.Answer `json:"answers" gorm:"foreignKey:Question;references:ID"`
 }
 
+type Coord struct {
+	gorm.Model
+	Start uint32 `json:"start"`
+	End   uint32 `json:"end"`
+}
+
 type DocReq struct {
-	Document string   `json:"document"`
-	Coords   []uint32 `json:"coords"`
+	Document string  `json:"document"`
+	Coords   []Coord `json:"coords"`
 }
 
 func Handler(res http.ResponseWriter, req *http.Request) {
@@ -40,33 +47,37 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 func handlePut(res http.ResponseWriter, req *http.Request) {
 	db := util.GetDb()
 
+	// decode data
 	var data DocReq
 	if err := json.NewDecoder(req.Body).Decode(&data); err != nil {
 		_ = util.WriteError(res, http.StatusBadRequest, "couldn't decode body")
 		return
 	}
 
+	// save document
+	doc := Document{
+		ID: data.Document,
+	}
+	if err := db.Save(doc).Error; err != nil {
+		util.WriteError(res, http.StatusInternalServerError, "couldn't create doc")
+		return
+	}
+
 	// save questions
 	var questions []Question
 	for _, coord := range data.Coords {
-		question := Question{
+		q := Question{
 			Document: data.Document,
-			Coord:    coord,
+			Start:    coord.Start,
+			End:      coord.End,
 		}
-		questions = append(questions, question)
-		if err := db.Save(question).Error; err != nil {
-			_ = util.WriteError(res, http.StatusBadRequest, "couldn't create doc")
-			return
-		}
+		questions = append(questions, q)
 	}
 
-	// save document
-	doc := Document{
-		ID:        data.Document,
-		Questions: questions,
+	if err := db.Save(questions).Error; err != nil {
+		util.WriteError(res, http.StatusInternalServerError, "couldn't create questions")
+		return
 	}
-
-	db.Save(doc)
 }
 
 func Get(res http.ResponseWriter, req *http.Request) {
