@@ -83,6 +83,8 @@ func main() {
 	mux.HandleFunc("/documents", answers.DocHandler)
 	mux.HandleFunc("/documents/:id", answers.GetQuestionsByDoc)
 
+	mux.HandleFunc("/question/:id", answers.GetQuestionsById)
+
 	slog.Info("listening at", "address", config.Listen)
 	err = http.ListenAndServe(config.Listen, mux)
 	if err != nil {

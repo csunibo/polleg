@@ -44,6 +44,14 @@ func handleDocPut(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func GetQuestionsById(res http.ResponseWriter, req *http.Request) {
+	var docs Question
+	db := util.GetDb()
+	docId := muxie.GetParam(res, "id")
+	db.Where("id = ?", docId).Find(&docs)
+	util.WriteJson(res, docs)
+}
+
 func GetQuestionsByDoc(res http.ResponseWriter, req *http.Request) {
 	var docs []Question
 	db := util.GetDb()
