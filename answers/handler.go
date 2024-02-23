@@ -2,11 +2,11 @@ package answers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/csunibo/stackunibo/auth"
 	"github.com/csunibo/stackunibo/util"
+	"github.com/kataras/muxie"
 )
 
 type AnswerObj struct {
@@ -15,18 +15,7 @@ type AnswerObj struct {
 	Content  string `json:"content"`
 }
 
-func AnswerHandler(res http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case http.MethodGet:
-		handleGet(res, req)
-	case http.MethodPut:
-		handlePut(res, req)
-	default:
-		_ = util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
-	}
-}
-
-func handlePut(res http.ResponseWriter, req *http.Request) {
+func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 	db := util.GetDb()
 	user := auth.GetUser(req)
 
@@ -39,7 +28,7 @@ func handlePut(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(user)
+	//fmt.Println(user)
 	var quest Question
 	if err := db.First(&quest, ans.Question).Error; err != nil {
 		util.WriteError(res, http.StatusBadRequest, "no Question associated with request (or other Error)")
@@ -69,7 +58,21 @@ func handlePut(res http.ResponseWriter, req *http.Request) {
 
 }
 
-func handleGet(res http.ResponseWriter, req *http.Request) {
+func GetAnswerHandler(res http.ResponseWriter, req *http.Request) {
+	db := util.GetDb()
+	//user := auth.GetUser(req)
+
+	id := muxie.GetParam(res, "id")
+	var ans Answer
+	if err := db.First(&ans, id).Error; err != nil {
+		util.WriteError(res, http.StatusBadRequest, "Answer not found")
+		return
+	}
+
+	//fmt.Println(id, ans)
+
+	util.WriteJson(res, ans)
+
 	// var quest []Question
 	// db := util.GetDb()
 	// docId := muxie.GetParam(res, "id")

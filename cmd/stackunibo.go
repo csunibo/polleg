@@ -77,8 +77,8 @@ func main() {
 
 	mux.Use(authenticator.Middleware)
 	mux.HandleFunc("/whoami", auth.WhoAmIHandler)
-	mux.HandleFunc("/answers/:id", answers.AnswerHandler)
-	mux.HandleFunc("/answers/by-doc/:id", answers.ByDoc)
+	mux.HandleFunc("/answers", answers.PutAnswerHandler)
+	mux.HandleFunc("/answers/:id", answers.GetAnswerHandler)
 
 	mux.HandleFunc("/documents", answers.DocHandler)
 	mux.HandleFunc("/documents/:id", answers.GetQuestionsByDoc)
