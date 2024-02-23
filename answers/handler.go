@@ -2,23 +2,19 @@ package answers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
-	"github.com/csunibo/stackunibo/documents"
+	"github.com/csunibo/stackunibo/auth"
 	"github.com/csunibo/stackunibo/util"
 	"github.com/kataras/muxie"
-	"gorm.io/gorm"
 )
 
 type AnswerObj struct {
-	Document  string `json:"document"`
-	Question  uint   `json:"question"`
-	Parent    uint   `json:"parent"`
-	User      string `json:"user"`
-	Content   string `json:"content"`
-	Upvotes   uint32 `json:"upvotes"`
-	Downvotes uint32 `json:"downvotes"`
+	Question uint   `json:"question"`
+	Parent   uint   `json:"parent"`
+	Content  string `json:"content"`
 }
 
 func AnswerHandler(res http.ResponseWriter, req *http.Request) {
@@ -33,27 +29,34 @@ func AnswerHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func handlePut(res http.ResponseWriter, req *http.Request) {
+	user := auth.GetUser(req)
 	// Declare a new Person struct.
 	var ans AnswerObj
 
 	err := json.NewDecoder(req.Body).Decode(&ans)
 	if err != nil {
-		util.WriteError(res, http.StatusBadRequest, "specify a redirect_uri url param")
+		util.WriteError(res, http.StatusBadRequest, "decode error")
 		return
 	}
 
-	// Do something with the Person struct...
+	fmt.Println(user, ans.Question)
+	var quest Question
+	util.GetDb().First(&quest, ans.Question)
 
-	util.Get().Create(&Answer{
-		Document: documents.Document{ID: ans.Document},
-		Question: documents.Question{Model: gorm.Model{ID: ans.Question}},
+	// var doc Document
+	// util.GetDb().First(&quest, quest.)
+	//fmt.Println(doc)
 
-		Parent:    nil,
-		User:      ans.User,
-		Content:   ans.Content,
-		Upvotes:   ans.Upvotes,
-		Downvotes: ans.Downvotes,
-	})
+	/*
+		util.GetDb().Create(&Answer{
+			Document: ans.Document,
+			Question: ans.Question,
+
+			Parent:  nil,
+			User:    user.Username,
+			Content: ans.Content,
+		})
+	*/
 }
 
 func handleGet(res http.ResponseWriter, req *http.Request) {
