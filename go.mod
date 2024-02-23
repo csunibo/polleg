@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/uuid v1.6.0
+	github.com/kataras/muxie v1.1.2
 	github.com/pelletier/go-toml/v2 v2.1.1
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	gorm.io/gorm v1.25.7

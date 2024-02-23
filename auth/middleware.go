@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/csunibo/stackunibo/util"
@@ -25,4 +27,29 @@ func (a *Authenticator) RequireJWTCookie(w http.ResponseWriter, r *http.Request)
 	}
 
 	return parsedToken, nil
+}
+
+func (a *Authenticator) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		parsedToken, err := a.RequireJWTCookie(res, req)
+		if err != nil {
+			return
+		}
+
+		userMap, ok := parsedToken.Claims.(jwt.MapClaims)["user"].(map[string]interface{})
+		if !ok {
+			_ = util.WriteError(res, http.StatusUnauthorized, "could not read JWT contents")
+			return
+		}
+		user := User{
+			Username:  userMap["username"].(string),
+			AvatarUrl: userMap["avatarUrl"].(string),
+			Name:      userMap["name"].(string),
+			Email:     userMap["email"].(string),
+		}
+		ctx := context.WithValue(req.Context(), AuthContextKey, user)
+
+		fmt.Println(user)
+		next.ServeHTTP(res, req.WithContext(ctx))
+	})
 }

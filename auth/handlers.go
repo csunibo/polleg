@@ -10,21 +10,6 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-func (a *Authenticator) WhoAmIHandler(res http.ResponseWriter, req *http.Request) {
-	parsedToken, err := a.RequireJWTCookie(res, req)
-	if err != nil {
-		return
-	}
-
-	user := parsedToken.Claims.(jwt.MapClaims)["user"]
-
-	err = util.WriteJson(res, user)
-	if err != nil {
-		_ = util.WriteError(res, http.StatusInternalServerError, "")
-		slog.Error("could not encode json:", "error", err)
-	}
-}
-
 // CallbackHandler handles the OAuth callback, obtaining the GitHub's Bearer token
 // for the logged-in user, and generating a wrapper JWT for our upld session.
 func (a *Authenticator) CallbackHandler(res http.ResponseWriter, req *http.Request) {

@@ -9,10 +9,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/kataras/muxie"
 	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/exp/slog"
 
+	"github.com/csunibo/stackunibo/answers"
 	"github.com/csunibo/stackunibo/auth"
+	"github.com/csunibo/stackunibo/util"
 )
 
 type Config struct {
@@ -54,38 +57,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// client, err = initializeClient()
-	// if err != nil {
-	// 	slog.Error("failed to initialize client", "err", err)
-	// 	os.Exit(1)
-	// }
-	//
-	// // TODO: From here it's all testing code
-	// repositories, _, err := client.Repositories.List(context.Background(), "csunibo", nil)
-	// if err != nil {
-	// 	slog.Error("failed to list repositories", "err", err)
-	// 	os.Exit(1)
-	// }
-	//
-	// for _, repository := range repositories {
-	// 	println(repository.GetName())
-	// }
-	//
-	// comment, _, err := client.Issues.CreateComment(
-	// 	context.Background(),
-	// 	"csunibo",
-	// 	"ing-sistemi-informativi-test",
-	// 	1,
-	// 	&github.IssueComment{
-	// 		Body: github.String("Hello, world!"),
-	// 	})
-	// if err != nil {
-	// 	slog.Error("failed to create comment", "err", err)
-	// 	os.Exit(1)
-	// }
-	//
-	// slog.Info("comment created", "id", comment.GetID(), "url", comment.GetURL())
+	fmt.Print(db)
 
 	authenticator := auth.NewAuthenticator(&auth.Config{
 		BaseURL:      baseURL,
@@ -96,16 +68,18 @@ func main() {
 	})
 
 	// Routes
-	mux := http.NewServeMux()
+	mux := muxie.NewMux()
+	mux.Use(util.NewCorsMiddleware(config.ClientURLs, true, mux))
 	mux.HandleFunc("/login", authenticator.LoginHandler)
 	mux.HandleFunc("/login/callback", authenticator.CallbackHandler)
-	mux.HandleFunc("/whoami", authenticator.WhoAmIHandler)
 
-	// Middlewares
-	handler := NewCors(config.ClientURLs, true, mux)
+	mux.Use(authenticator.Middleware)
+	mux.HandleFunc("/whoami", auth.WhoAmIHandler)
+	mux.HandleFunc("/answers/:id", answers.AnswerHandler)
+	mux.HandleFunc("/answers/by-doc/:id", answers.ByDoc)
 
 	slog.Info("listening at", "address", config.Listen)
-	err = http.ListenAndServe(config.Listen, handler)
+	err = http.ListenAndServe(config.Listen, mux)
 	if err != nil {
 		slog.Error("failed to serve", "err", err)
 	}
