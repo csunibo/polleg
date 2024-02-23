@@ -56,7 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 	db := util.GetDb()
-	if err := db.AutoMigrate(&answers.Question{}, &answers.Answer{}); err != nil {
+	if err := db.AutoMigrate(&answers.Question{}, &answers.Answer{}, &answers.Vote{}); err != nil {
 		slog.Error("AutoMigrate failed", "err", err)
 		os.Exit(1)
 	}
@@ -84,6 +84,7 @@ func main() {
 	mux.HandleFunc("/documents/:id", answers.GetQuestionsByDoc)
 
 	mux.HandleFunc("/question/:id", answers.GetQuestionsById)
+	mux.HandleFunc("/answers/:id/vote", answers.PostVote)
 
 	slog.Info("listening at", "address", config.Listen)
 	err = http.ListenAndServe(config.Listen, mux)

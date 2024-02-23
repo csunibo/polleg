@@ -35,3 +35,10 @@ type DocReq struct {
 	Document string  `json:"document"`
 	Coords   []Coord `json:"coords"`
 }
+
+type Vote struct {
+	gorm.Model
+	Answer uint   `json:"answer"`
+	User   string `json:"user"`
+	Vote   int8   `json:"vote"`
+}

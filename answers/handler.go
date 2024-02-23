@@ -2,6 +2,7 @@ package answers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/csunibo/stackunibo/auth"
@@ -69,4 +70,76 @@ func GetAnswerHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	util.WriteJson(res, ans)
+}
+
+type VoteObj struct {
+	Vote int8 `json:"vote"`
+}
+
+func PostVote(res http.ResponseWriter, req *http.Request) {
+	db := util.GetDb()
+	user := auth.GetUser(req)
+	id := muxie.GetParam(res, "id")
+
+	// Declare a new Person struct.
+	var vote VoteObj
+
+	err := json.NewDecoder(req.Body).Decode(&vote)
+	if err != nil {
+		util.WriteError(res, http.StatusBadRequest, "decode error")
+		return
+	}
+
+	if vote.Vote != 1 && vote.Vote != -1 {
+		util.WriteError(res, http.StatusBadRequest, "body 'vote' must be either 1 or -1")
+		return
+	}
+
+	var ans Answer
+	if err = db.First(&ans, id).Error; err != nil {
+		util.WriteError(res, http.StatusBadRequest, "no question associated with request id")
+		return
+	}
+
+	var voteRecord []Vote
+	db.Where("votes.user = ? AND votes.answer = ?", user.Username, ans.ID).Find(&voteRecord)
+	fmt.Println(voteRecord)
+	if len(voteRecord) == 0 {
+		db.Create(&Vote{
+			User:   user.Username,
+			Answer: ans.ID,
+			Vote:   vote.Vote,
+		})
+
+		if vote.Vote > 0 {
+			ans.Upvotes += 1
+		} else {
+			ans.Downvotes += 1
+		}
+		db.Save(&ans)
+		return
+	}
+
+	if voteRecord[0].Vote == vote.Vote {
+		if voteRecord[0].Vote > 0 {
+			ans.Upvotes -= 1
+		} else {
+			ans.Downvotes -= 1
+		}
+		db.Save(&ans)
+		db.Delete(&voteRecord[0])
+		return
+	}
+
+	voteRecord[0].Vote = vote.Vote
+	if voteRecord[0].Vote > 0 {
+		ans.Upvotes += 1
+		ans.Downvotes -= 1
+	} else {
+		ans.Upvotes -= 1
+		ans.Downvotes += 1
+	}
+	db.Save(&ans)
+	db.Save(&voteRecord[0])
+
 }
