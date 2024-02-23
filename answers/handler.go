@@ -3,17 +3,15 @@ package answers
 import (
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/csunibo/stackunibo/auth"
 	"github.com/csunibo/stackunibo/util"
-	"github.com/kataras/muxie"
 )
 
 type AnswerObj struct {
 	Question uint   `json:"question"`
-	Parent   uint   `json:"parent"`
+	Parent   *uint  `json:"parent"`
 	Content  string `json:"content"`
 }
 
@@ -29,7 +27,9 @@ func AnswerHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func handlePut(res http.ResponseWriter, req *http.Request) {
+	db := util.GetDb()
 	user := auth.GetUser(req)
+
 	// Declare a new Person struct.
 	var ans AnswerObj
 
@@ -39,27 +39,40 @@ func handlePut(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(user, ans.Question)
+	fmt.Println(user)
 	var quest Question
-	util.GetDb().First(&quest, ans.Question)
+	if err := db.First(&quest, ans.Question).Error; err != nil {
+		util.WriteError(res, http.StatusBadRequest, "no Question associated with request (or other Error)")
+		return
+	}
 
-	// var doc Document
-	// util.GetDb().First(&quest, quest.)
-	//fmt.Println(doc)
+	if ans.Parent != nil {
+		var Parent Answer
+		if err = db.First(&Parent, ans.Parent).Error; err != nil {
+			util.WriteError(res, http.StatusBadRequest, "parent is given but none found")
+			return
+		}
+		if Parent.Question != quest.ID {
+			util.WriteError(res, http.StatusBadRequest, "mismatch between parent question and this question")
+			return
+		}
+	}
 
-	/*
-		util.GetDb().Create(&Answer{
-			Document: ans.Document,
-			Question: ans.Question,
+	util.GetDb().Create(&Answer{
+		Question:  ans.Question,
+		Parent:    ans.Parent,
+		User:      user.Username,
+		Content:   ans.Content,
+		Upvotes:   0,
+		Downvotes: 0,
+	})
 
-			Parent:  nil,
-			User:    user.Username,
-			Content: ans.Content,
-		})
-	*/
 }
 
 func handleGet(res http.ResponseWriter, req *http.Request) {
-	answer := muxie.GetParam(res, "id")
-	slog.Info("Fetching answers", "doc", answer)
+	// var quest []Question
+	// db := util.GetDb()
+	// docId := muxie.GetParam(res, "id")
+	// db.Where("id = ?", docId).Find(&quest)
+	// util.WriteJson(res, docs)
 }
