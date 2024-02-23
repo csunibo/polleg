@@ -79,12 +79,13 @@ func main() {
 	mux.HandleFunc("/whoami", auth.WhoAmIHandler)
 	mux.HandleFunc("/answers", answers.PutAnswerHandler)
 	mux.HandleFunc("/answers/:id", answers.GetAnswerHandler)
+	mux.HandleFunc("/answers/:id/vote", answers.PostVote)
 
 	mux.HandleFunc("/documents", answers.DocHandler)
 	mux.HandleFunc("/documents/:id", answers.GetQuestionsByDoc)
 
 	mux.HandleFunc("/question/:id", answers.GetQuestionsById)
-	mux.HandleFunc("/answers/:id/vote", answers.PostVote)
+	mux.HandleFunc("/question/:id/answers", answers.GetAnswerOfQuestion)
 
 	slog.Info("listening at", "address", config.Listen)
 	err = http.ListenAndServe(config.Listen, mux)

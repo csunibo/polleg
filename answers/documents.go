@@ -59,3 +59,13 @@ func GetQuestionsByDoc(res http.ResponseWriter, req *http.Request) {
 	db.Where("document = ?", docId).Find(&docs)
 	util.WriteJson(res, docs)
 }
+
+func GetAnswerOfQuestion(res http.ResponseWriter, req *http.Request) {
+	db := util.GetDb()
+	docId := muxie.GetParam(res, "id")
+
+	var ans []Answer
+	db.Where("question = ?", docId).Find(&ans)
+
+	util.WriteJson(res, ans)
+}
