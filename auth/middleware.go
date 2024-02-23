@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/csunibo/stackunibo/util"
@@ -49,7 +48,6 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 		}
 		ctx := context.WithValue(req.Context(), AuthContextKey, user)
 
-		fmt.Println(user)
 		next.ServeHTTP(res, req.WithContext(ctx))
 	})
 }

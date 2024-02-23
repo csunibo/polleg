@@ -28,7 +28,6 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//fmt.Println(user)
 	var quest Question
 	if err := db.First(&quest, ans.Question).Error; err != nil {
 		util.WriteError(res, http.StatusBadRequest, "no Question associated with request (or other Error)")
@@ -69,13 +68,5 @@ func GetAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//fmt.Println(id, ans)
-
 	util.WriteJson(res, ans)
-
-	// var quest []Question
-	// db := util.GetDb()
-	// docId := muxie.GetParam(res, "id")
-	// db.Where("id = ?", docId).Find(&quest)
-	// util.WriteJson(res, docs)
 }
