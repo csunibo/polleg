@@ -18,6 +18,6 @@ func ConnectDb(ConnStr string) error {
 	return nil
 }
 
-func Get() *gorm.DB {
+func GetDb() *gorm.DB {
 	return db
 }

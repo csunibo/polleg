@@ -7,9 +7,9 @@ import (
 
 type Answer struct {
 	gorm.Model
-	Document  documents.Document `json:"document"`
-	Question  documents.Question `json:"question"`
-	Parent    *Answer            `json:"parent"`
+	Document  documents.Document `json:"document" gorm:"foreignKey:Document;references:ID"`
+	Question  documents.Question `json:"question" gorm:"foreignKey:Question;references:ID"`
+	Parent    *Answer            `json:"parent" gorm:"foreignKey:Parent;references:ID"`
 	User      string             `json:"user"`
 	Content   string             `json:"content"`
 	Upvotes   uint32             `json:"upvotes"`

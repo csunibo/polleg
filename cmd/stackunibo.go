@@ -13,6 +13,7 @@ import (
 
 	"github.com/csunibo/stackunibo/answers"
 	"github.com/csunibo/stackunibo/auth"
+	"github.com/csunibo/stackunibo/documents"
 	"github.com/csunibo/stackunibo/util"
 )
 
@@ -55,6 +56,11 @@ func main() {
 		slog.Error("failed to connect to db", "err", err)
 		os.Exit(1)
 	}
+	db := util.GetDb()
+	if err := db.AutoMigrate(&documents.Document{}, &documents.Question{}, &answers.Answer{}).Error(); err != "" {
+		slog.Error("AutoMigrate failed", "err", err)
+		os.Exit(1)
+	}
 
 	authenticator := auth.NewAuthenticator(&auth.Config{
 		BaseURL:      baseURL,
@@ -74,6 +80,9 @@ func main() {
 	mux.HandleFunc("/whoami", auth.WhoAmIHandler)
 	mux.HandleFunc("/answers/:id", answers.AnswerHandler)
 	mux.HandleFunc("/answers/by-doc/:id", answers.ByDoc)
+
+	mux.HandleFunc("/documents", documents.Handler)
+	mux.HandleFunc("/documents/:id", documents.Get)
 
 	slog.Info("listening at", "address", config.Listen)
 	err = http.ListenAndServe(config.Listen, mux)
