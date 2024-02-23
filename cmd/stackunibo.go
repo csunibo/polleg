@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -44,6 +46,13 @@ func main() {
 	if err != nil {
 		slog.Error("failed to parse baseURL", "err", err)
 		os.Exit(1)
+	}
+
+	connStr := "postgresql://berlusconi:bungabunga@0.0.0.0:5432"
+	// Connect to database
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// client, err = initializeClient()

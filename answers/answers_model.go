@@ -6,7 +6,9 @@ import (
 	auth "github.com/csunibo/stackunibo/auth"
 	"github.com/csunibo/stackunibo/util"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"golang.org/x/exp/slog"
+	"gorm.io/gorm"
 )
 
 func AnswerHandler(res http.ResponseWriter, req *http.Request) {
@@ -24,14 +26,14 @@ func AnswerHandler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-/*
 type Answer struct {
-	document_id: uuid
-	question_id: uuid
-	answer_id: uuid
-	parent_answer_id: option<uuid> // si fa con un puntatore in go
-	user_id: string // username di github
-	content: string
-	upvotes: uint32
-	dowvotes: uint32
-  }*/
+	gorm.Model     `json:"model"`
+	DocumentId     uuid.UUID  `json:"documentId"`
+	QuestionId     uuid.UUID  `json:"questionId"`
+	AnswerId       uuid.UUID  `json:"answerId"`
+	ParentAnswerId *uuid.UUID `json:"parentAnswerId"`
+	userId         string     `json:"userId"`
+	content        string     `json:"content"`
+	upvotes        uint32     `json:"upvotes"`
+	downvotes      uint32     `json:"downvotes"`
+}
