@@ -1,9 +1,7 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -23,6 +21,7 @@ type Config struct {
 	BaseURL    string   `toml:"base_url"`
 	ClientURLs []string `toml:"client_urls"`
 
+	DbURI                string        `toml:"db_uri" required:"true"`
 	OAuthClientID        string        `toml:"oauth_client_id" required:"true"`
 	OAuthClientSecret    string        `toml:"oauth_client_secret" required:"true"`
 	OAuthSigningKey      string        `toml:"oauth_signing_key" required:"true"`
@@ -51,13 +50,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	connStr := "postgresql://berlusconi:bungabunga@0.0.0.0:5432"
-	// Connect to database
-	db, err := sql.Open("postgres", connStr)
+	err = util.ConnectDb(config.DbURI)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("failed to connect to db", "err", err)
+		os.Exit(1)
 	}
-	fmt.Print(db)
 
 	authenticator := auth.NewAuthenticator(&auth.Config{
 		BaseURL:      baseURL,
