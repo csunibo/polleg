@@ -16,3 +16,22 @@ type Answer struct {
 	Downvotes uint32   `json:"downvotes"`
 	Replies   []Answer `json:"replies" gorm:"foreignKey:Parent;references:ID"`
 }
+
+type Question struct {
+	gorm.Model
+	Document string   `json:"document"`
+	Start    uint32   `json:"start"`
+	End      uint32   `json:"end"`
+	Answers  []Answer `json:"answers" gorm:"foreignKey:Question;references:ID"`
+}
+
+type Coord struct {
+	gorm.Model
+	Start uint32 `json:"start"`
+	End   uint32 `json:"end"`
+}
+
+type DocReq struct {
+	Document string  `json:"document"`
+	Coords   []Coord `json:"coords"`
+}

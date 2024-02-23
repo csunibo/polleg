@@ -13,7 +13,6 @@ import (
 
 	"github.com/csunibo/stackunibo/answers"
 	"github.com/csunibo/stackunibo/auth"
-	"github.com/csunibo/stackunibo/documents"
 	"github.com/csunibo/stackunibo/util"
 )
 
@@ -57,7 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 	db := util.GetDb()
-	if err := db.AutoMigrate(&documents.Document{}, &documents.Question{}, &answers.Answer{}); err != nil {
+	if err := db.AutoMigrate(&answers.Question{}, &answers.Answer{}); err != nil {
 		slog.Error("AutoMigrate failed", "err", err)
 		os.Exit(1)
 	}
@@ -81,8 +80,8 @@ func main() {
 	mux.HandleFunc("/answers/:id", answers.AnswerHandler)
 	mux.HandleFunc("/answers/by-doc/:id", answers.ByDoc)
 
-	mux.HandleFunc("/documents", documents.Handler)
-	mux.HandleFunc("/documents/:id", documents.Get)
+	mux.HandleFunc("/documents", answers.DocHandler)
+	mux.HandleFunc("/documents/:id", answers.GetQuestionsByDoc)
 
 	slog.Info("listening at", "address", config.Listen)
 	err = http.ListenAndServe(config.Listen, mux)
