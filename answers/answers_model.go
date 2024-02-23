@@ -7,11 +7,11 @@ import (
 
 type Answer struct {
 	gorm.Model     `json:"model"`
-	DocumentId     uuid.UUID  `json:"documentId"`
-	QuestionId     uuid.UUID  `json:"questionId"`
-	AnswerId       uuid.UUID  `json:"answerId"`
-	ParentAnswerId *uuid.UUID `json:"parentAnswerId"`
-	userId         string     `json:"userId"`
+	DocumentID     uuid.UUID  `json:"document_ID"`
+	QuestionID     uuid.UUID  `json:"question_ID"`
+	AnswerID       uuid.UUID  `json:"answer_ID"`
+	ParentAnswerID *uuid.UUID `json:"parentAnswer_ID"`
+	userID         string     `json:"user_ID"`
 	content        string     `json:"content"`
 	upvotes        uint32     `json:"upvotes"`
 	downvotes      uint32     `json:"downvotes"`
