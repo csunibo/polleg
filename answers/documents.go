@@ -8,16 +8,12 @@ import (
 	"github.com/kataras/muxie"
 )
 
-func DocHandler(res http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case http.MethodPut:
-		handleDocPut(res, req)
-	default:
+func NewDocument(res http.ResponseWriter, req *http.Request) {
+	// Check method put is used
+	if req.Method != http.MethodPut {
 		_ = util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		return
 	}
-}
-
-func handleDocPut(res http.ResponseWriter, req *http.Request) {
 	db := util.GetDb()
 
 	// decode data
@@ -42,6 +38,11 @@ func handleDocPut(res http.ResponseWriter, req *http.Request) {
 		util.WriteError(res, http.StatusInternalServerError, "couldn't create questions")
 		return
 	}
+
+	r := Res{
+		Res: "OK",
+	}
+	util.WriteJson(res, r)
 }
 
 func GetQuestionsById(res http.ResponseWriter, req *http.Request) {

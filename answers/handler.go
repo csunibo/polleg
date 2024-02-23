@@ -17,6 +17,13 @@ type AnswerObj struct {
 }
 
 func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
+	fmt.Println(req)
+	// Check method put is used
+	if req.Method != http.MethodPut {
+		_ = util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		return
+	}
+
 	db := util.GetDb()
 	user := auth.GetUser(req)
 
@@ -29,40 +36,48 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var quest Question
-	if err := db.First(&quest, ans.Question).Error; err != nil {
-		util.WriteError(res, http.StatusBadRequest, "no Question associated with request (or other Error)")
-		return
-	}
+	// var quest Question
+	// if err := db.First(&quest, ans.Question).Error; err != nil {
+	// 	util.WriteError(res, http.StatusBadRequest, "no Question associated with request (or other Error)")
+	// 	return
+	// }
 
-	if ans.Parent != nil {
-		var Parent Answer
-		if err = db.First(&Parent, ans.Parent).Error; err != nil {
-			util.WriteError(res, http.StatusBadRequest, "parent is given but none found")
-			return
-		}
-		if Parent.Question != quest.ID {
-			util.WriteError(res, http.StatusBadRequest, "mismatch between parent question and this question")
-			return
-		}
-	}
+	// if ans.Parent != nil {
+	// 	var Parent Answer
+	// 	if err = db.First(&Parent, ans.Parent).Error; err != nil {
+	// 		util.WriteError(res, http.StatusBadRequest, "parent is given but none found")
+	// 		return
+	// 	}
+	// 	if Parent.Question != quest.ID {
+	// 		util.WriteError(res, http.StatusBadRequest, "mismatch between parent question and this question")
+	// 		return
+	// 	}
+	// }
 
-	util.GetDb().Create(&Answer{
+	err = db.Create(&Answer{
 		Question:  ans.Question,
 		Parent:    ans.Parent,
 		User:      user.Username,
 		Content:   ans.Content,
 		Upvotes:   0,
 		Downvotes: 0,
-	})
+	}).Error
 
+	if err != nil {
+		util.WriteError(res, http.StatusBadRequest, "create error")
+		return
+	}
+
+	r := Res{
+		Res: "OK",
+	}
+	util.WriteJson(res, r)
 }
 
-func GetAnswerHandler(res http.ResponseWriter, req *http.Request) {
+func GetAnswerById(res http.ResponseWriter, req *http.Request) {
 	db := util.GetDb()
-	//user := auth.GetUser(req)
-
 	id := muxie.GetParam(res, "id")
+
 	var ans Answer
 	if err := db.First(&ans, id).Error; err != nil {
 		util.WriteError(res, http.StatusBadRequest, "Answer not found")
@@ -141,5 +156,17 @@ func PostVote(res http.ResponseWriter, req *http.Request) {
 	}
 	db.Save(&ans)
 	db.Save(&voteRecord[0])
+}
 
+func GetAnswersByQuestion(res http.ResponseWriter, req *http.Request) {
+	db := util.GetDb()
+	qid := muxie.GetParam(res, "question")
+
+	var ans []Answer
+	if err := db.Where("question = ?", qid).Find(&ans).Error; err != nil {
+		util.WriteError(res, http.StatusBadRequest, "Answer not found")
+		return
+	}
+
+	util.WriteJson(res, ans)
 }

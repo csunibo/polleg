@@ -32,7 +32,7 @@ var (
 	// Default config values
 	config = Config{
 		Listen:               "0.0.0.0:3000",
-		BaseURL:              "http://localhost:3000",
+		BaseURL:              "http://10.1.30.56:3000",
 		OAuthSessionDuration: time.Hour * 12,
 	}
 )
@@ -72,17 +72,27 @@ func main() {
 	// Routes
 	mux := muxie.NewMux()
 	mux.Use(util.NewCorsMiddleware(config.ClientURLs, true, mux))
+
+	// authentication api
 	mux.HandleFunc("/login", authenticator.LoginHandler)
 	mux.HandleFunc("/login/callback", authenticator.CallbackHandler)
 
 	mux.Use(authenticator.Middleware)
 	mux.HandleFunc("/whoami", auth.WhoAmIHandler)
+
+	// insert new answer
 	mux.HandleFunc("/answers", answers.PutAnswerHandler)
-	mux.HandleFunc("/answers/:id", answers.GetAnswerHandler)
+	// get answer
+	mux.HandleFunc("/answers/:id", answers.GetAnswerById)
+	// get answers by question
+	mux.HandleFunc("/answers/question/:question", answers.GetAnswersByQuestion)
 	mux.HandleFunc("/answers/:id/vote", answers.PostVote)
 
-	mux.HandleFunc("/documents", answers.DocHandler)
+	// insert new doc and quesions
+	mux.HandleFunc("/documents", answers.NewDocument)
+	// get all doc's questions
 	mux.HandleFunc("/documents/:id", answers.GetQuestionsByDoc)
+	mux.HandleFunc("/questions/document/:id", answers.GetQuestionsByDoc)
 
 	mux.HandleFunc("/question/:id", answers.GetQuestionsById)
 	mux.HandleFunc("/question/:id/answers", answers.GetAnswerOfQuestion)

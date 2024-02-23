@@ -6,9 +6,9 @@ import (
 
 type Answer struct {
 	gorm.Model
-	Document string
-	Question uint
-	Parent   *uint
+	Document string `json:"document"`
+	Question uint   `json:"question" gorm:"foreignKey:Question;references:ID"`
+	Parent   *uint  `json:"parent"`
 
 	User      string   `json:"user"`
 	Content   string   `json:"content"`
@@ -19,10 +19,9 @@ type Answer struct {
 
 type Question struct {
 	gorm.Model
-	Document string   `json:"document"`
-	Start    uint32   `json:"start"`
-	End      uint32   `json:"end"`
-	Answers  []Answer `json:"answers" gorm:"foreignKey:Question;references:ID"`
+	Document string `json:"document"`
+	Start    uint32 `json:"start"`
+	End      uint32 `json:"end"`
 }
 
 type Coord struct {
@@ -41,4 +40,8 @@ type Vote struct {
 	Answer uint   `json:"answer"`
 	User   string `json:"user"`
 	Vote   int8   `json:"vote"`
+}
+
+type Res struct {
+	Res string `json:"res"`
 }

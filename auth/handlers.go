@@ -72,6 +72,7 @@ func (a *Authenticator) CallbackHandler(res http.ResponseWriter, req *http.Reque
 		Value:    tokenString,
 		Expires:  time.Now().Add(a.expiration),
 		Secure:   false,
+		SameSite: http.SameSiteNoneMode,
 		HttpOnly: true,
 		Path:     "/",
 	}
