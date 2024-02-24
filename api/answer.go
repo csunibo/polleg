@@ -29,7 +29,7 @@ var (
 	ANSWERS_QUERY = fmt.Sprintf(`
   select   *
   from     answers
-  join     (%s) on answer = answers.id
+  full join     (%s) on answer = answers.id
   where    answers.parent is NULL and answers.question = ? 
 `, VOTES_QUERY)
 	REPLIES_QUERY = `
@@ -118,6 +118,7 @@ func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	var answers []Answer
+	fmt.Println(ANSWERS_QUERY)
 	if err := db.Raw(ANSWERS_QUERY, question.ID).Scan(&answers).Error; err != nil {
 		slog.Error("could not fetch answers", "err", err)
 		util.WriteError(res, http.StatusInternalServerError, "could not fetch answers")
