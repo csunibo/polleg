@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-
+	slogGorm "github.com/orandin/slog-gorm"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -10,8 +10,13 @@ import (
 var db *gorm.DB = nil
 
 func ConnectDb(ConnStr string) error {
+	gormLogger := slogGorm.New(
+		slogGorm.WithTraceAll(), // trace all messages
+	)
 	var err error
-	db, err = gorm.Open(postgres.Open(ConnStr), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open(ConnStr), &gorm.Config{
+		Logger: gormLogger,
+	})
 	if err != nil {
 		return fmt.Errorf("failed to open db connection: %w", err)
 	}
