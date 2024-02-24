@@ -41,7 +41,3 @@ type Vote struct {
 	User   string `json:"user"`
 	Vote   int8   `json:"vote"`
 }
-
-type Res struct {
-	Res string `json:"res"`
-}

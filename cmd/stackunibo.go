@@ -28,14 +28,7 @@ type Config struct {
 	OAuthSessionDuration time.Duration `toml:"oauth_session_duration"`
 }
 
-var (
-	// Default config values
-	config = Config{
-		Listen:               "0.0.0.0:3000",
-		BaseURL:              "http://10.1.30.56:3000",
-		OAuthSessionDuration: time.Hour * 12,
-	}
-)
+var config Config
 
 func main() {
 	err := loadConfig()
@@ -85,14 +78,14 @@ func main() {
 	// get answer
 	mux.HandleFunc("/answers/:id", answers.GetAnswerById)
 	// get answers by question
-	mux.HandleFunc("/answers/question/:question", answers.GetAnswersByQuestion)
+	mux.HandleFunc("/answers/by-question/:question", answers.GetAnswersByQuestion)
 	mux.HandleFunc("/answers/:id/vote", answers.PostVote)
 
 	// insert new doc and quesions
 	mux.HandleFunc("/documents", answers.NewDocument)
 	// get all doc's questions
 	mux.HandleFunc("/documents/:id", answers.GetQuestionsByDoc)
-	mux.HandleFunc("/questions/document/:id", answers.GetQuestionsByDoc)
+	mux.HandleFunc("/questions/by-document/:id", answers.GetQuestionsByDoc)
 
 	mux.HandleFunc("/question/:id", answers.GetQuestionsById)
 	mux.HandleFunc("/question/:id/answers", answers.GetAnswerOfQuestion)

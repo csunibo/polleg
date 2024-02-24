@@ -10,6 +10,10 @@ type apiError struct {
 	Msg string `json:"error"`
 }
 
+type Res struct {
+	Res string `json:"res"`
+}
+
 func WriteError(res http.ResponseWriter, status int, err string) error {
 	res.WriteHeader(status)
 

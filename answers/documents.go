@@ -39,10 +39,7 @@ func NewDocument(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r := Res{
-		Res: "OK",
-	}
-	util.WriteJson(res, r)
+	util.WriteJson(res, util.Res{Res: "OK"})
 }
 
 func GetQuestionsById(res http.ResponseWriter, req *http.Request) {

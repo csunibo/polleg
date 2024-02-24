@@ -36,23 +36,23 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// var quest Question
-	// if err := db.First(&quest, ans.Question).Error; err != nil {
-	// 	util.WriteError(res, http.StatusBadRequest, "no Question associated with request (or other Error)")
-	// 	return
-	// }
+	var quest Question
+	if err := db.First(&quest, ans.Question).Error; err != nil {
+		util.WriteError(res, http.StatusBadRequest, "no Question associated with request (or other Error)")
+		return
+	}
 
-	// if ans.Parent != nil {
-	// 	var Parent Answer
-	// 	if err = db.First(&Parent, ans.Parent).Error; err != nil {
-	// 		util.WriteError(res, http.StatusBadRequest, "parent is given but none found")
-	// 		return
-	// 	}
-	// 	if Parent.Question != quest.ID {
-	// 		util.WriteError(res, http.StatusBadRequest, "mismatch between parent question and this question")
-	// 		return
-	// 	}
-	// }
+	if ans.Parent != nil {
+		var Parent Answer
+		if err = db.First(&Parent, ans.Parent).Error; err != nil {
+			util.WriteError(res, http.StatusBadRequest, "parent is given but none found")
+			return
+		}
+		if Parent.Question != quest.ID {
+			util.WriteError(res, http.StatusBadRequest, "mismatch between parent question and this question")
+			return
+		}
+	}
 
 	err = db.Create(&Answer{
 		Question:  ans.Question,
@@ -68,10 +68,7 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r := Res{
-		Res: "OK",
-	}
-	util.WriteJson(res, r)
+	util.WriteJson(res, util.Res{Res: "OK"})
 }
 
 func GetAnswerById(res http.ResponseWriter, req *http.Request) {
@@ -156,6 +153,7 @@ func PostVote(res http.ResponseWriter, req *http.Request) {
 	}
 	db.Save(&ans)
 	db.Save(&voteRecord[0])
+	util.WriteJson(res, util.Res{Res: "OK"})
 }
 
 func GetAnswersByQuestion(res http.ResponseWriter, req *http.Request) {
