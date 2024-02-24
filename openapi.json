@@ -41,6 +41,25 @@
         }
       }
     },
+    "/login/callback": {
+      "get": {
+        "summary": "Callback after successful login via GitHub",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to the appropriate page after successful authentication."
+          },
+          "400": {
+            "description": "If any of the required params is not defined."
+          },
+          "401": {
+            "description": "If authentication fails."
+          }
+        }
+      }
+    },
     "/whoami": {
       "get": {
         "tags": [
@@ -76,6 +95,125 @@
           },
           "401": {
             "description": "The user is not logged in. You need to first redirect to the /login route."
+          }
+        }
+      }
+    },
+    "/answers": {
+      "post": {
+        "summary": "Insert a new answer",
+        "tags": [
+          "answers"
+        ],
+        "responses": {
+          "201": {
+            "description": "Answer inserted successfully"
+          },
+          "401": {
+            "description": "Unauthorized, user not logged in."
+          }
+        }
+      }
+    },
+    "/answers/{id}/vote": {
+      "post": {
+        "summary": "Upvote or downvote an answer",
+        "tags": [
+          "answers"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "ID of the answer to vote on",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vote processed successfully"
+          },
+          "401": {
+            "description": "Unauthorized, user not logged in."
+          }
+        }
+      }
+    },
+    "/documents": {
+      "post": {
+        "summary": "Insert a new document",
+        "tags": [
+          "documents"
+        ],
+        "responses": {
+          "201": {
+            "description": "Document inserted successfully"
+          },
+          "401": {
+            "description": "Unauthorized, user not logged in."
+          }
+        }
+      }
+    },
+    "/documents/{id}": {
+      "get": {
+        "summary": "Get a document by ID",
+        "tags": [
+          "documents"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "ID of the document to retrieve",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized, user not logged in."
+          },
+          "404": {
+            "description": "Document not found"
+          }
+        }
+      }
+    },
+    "/questions/{id}": {
+      "get": {
+        "summary": "Get a question by ID",
+        "tags": [
+          "questions"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "ID of the question to retrieve",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Question retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized, user not logged in."
+          },
+          "404": {
+            "description": "Question not found"
           }
         }
       }
