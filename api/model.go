@@ -19,9 +19,10 @@ type Answer struct {
 
 type Question struct {
 	gorm.Model
-	Document string `json:"document"`
-	Start    uint32 `json:"start"`
-	End      uint32 `json:"end"`
+	Document string   `json:"document"`
+	Start    uint32   `json:"start"`
+	End      uint32   `json:"end"`
+	Answers  []Answer `json:"answers" gorm:"foreignKey:Question;references:ID"`
 }
 
 type Coord struct {

@@ -2,14 +2,17 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/csunibo/polleg/auth"
 	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
+	"golang.org/x/exp/slog"
 )
 
-type AnswerObj struct {
+type PutAnswerRequest struct {
 	Question uint   `json:"question"`
 	Parent   *uint  `json:"parent"`
 	Content  string `json:"content"`
@@ -25,24 +28,23 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 	db := util.GetDb()
 	user := auth.GetUser(req)
 
-	// Declare a new Person struct.
-	var ans AnswerObj
+	var ans PutAnswerRequest
 	err := json.NewDecoder(req.Body).Decode(&ans)
 	if err != nil {
-		util.WriteError(res, http.StatusBadRequest, "decode error")
+		util.WriteError(res, http.StatusBadRequest, fmt.Sprintf("decode error: %v", err))
 		return
 	}
 
 	var quest Question
 	if err := db.First(&quest, ans.Question).Error; err != nil {
-		util.WriteError(res, http.StatusBadRequest, "no Question associated with request (or other Error)")
+		util.WriteError(res, http.StatusBadRequest, "the referenced question does not exist")
 		return
 	}
 
 	if ans.Parent != nil {
 		var Parent Answer
 		if err = db.First(&Parent, ans.Parent).Error; err != nil {
-			util.WriteError(res, http.StatusBadRequest, "parent is given but none found")
+			util.WriteError(res, http.StatusBadRequest, "the referenced parent does not exist")
 			return
 		}
 		if Parent.Question != quest.ID {
@@ -51,63 +53,50 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	err = db.Create(&Answer{
+	// TODO: upvotes and downvotes should really be just the result of a
+	// COUNT() aggregator on the votes table
+	answer := Answer{
 		Question:  ans.Question,
 		Parent:    ans.Parent,
 		User:      user.Username,
 		Content:   ans.Content,
 		Upvotes:   0,
 		Downvotes: 0,
-	}).Error
-
+	}
+	err = db.Create(&answer).Error
 	if err != nil {
-		util.WriteError(res, http.StatusBadRequest, "create error")
+		slog.Error("error while creating the answer", "answer", answer, "err", err)
+		util.WriteError(res, http.StatusBadRequest, "could not insert the answer")
 		return
 	}
 
-	if err = util.WriteJson(res, util.Res{Res: "OK"}); err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "couldn't write response")
+	if err = util.WriteJson(res, answer); err != nil {
+		slog.Error("error while serializing the answer", "err", err)
 	}
 }
 
-// Get an answer by an ID
-func GetAnswerById(res http.ResponseWriter, req *http.Request) {
+// Given a question ID, return the question and all its answers
+func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method GET is used
 	if req.Method != http.MethodGet {
 		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
 	db := util.GetDb()
-	id := muxie.GetParam(res, "id")
-
-	var ans Answer
-	if err := db.First(&ans, id).Error; err != nil {
-		util.WriteError(res, http.StatusBadRequest, "Answer not found")
+	rawQID := muxie.GetParam(res, "id")
+	qID, err := strconv.ParseUint(rawQID, 10, 0)
+	if err != nil {
+		util.WriteError(res, http.StatusBadRequest, "invalid question id")
 		return
 	}
 
-	if err := util.WriteJson(res, ans); err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "couldn't write response")
-	}
-}
-
-// Given a question ID, find all the answers
-func GetAnswersByQuestion(res http.ResponseWriter, req *http.Request) {
-	// Check method GET is used
-	if req.Method != http.MethodGet {
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
-		return
-	}
-	db := util.GetDb()
-	qid := muxie.GetParam(res, "id")
-
-	var ans []Answer
-	if err := db.Where("question = ?", qid).Find(&ans).Error; err != nil {
+	var question Question
+	if err := db.First(&question, uint(qID)).Error; err != nil {
 		util.WriteError(res, http.StatusInternalServerError, "Answer not found")
 		return
 	}
 
-	if err := util.WriteJson(res, ans); err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "couldn't write response")
+	if err := util.WriteJson(res, question); err != nil {
+		slog.Error("error while serializing the question", "err", err)
 	}
 }

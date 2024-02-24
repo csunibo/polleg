@@ -69,36 +69,26 @@ func main() {
 		Expiration:   config.OAuthSessionDuration,
 	})
 
-	// Routes
 	mux := muxie.NewMux()
 	mux.Use(util.NewCorsMiddleware(config.ClientURLs, true, mux))
+
+	// authentication-less read-only queries
+	mux.HandleFunc("/documents/:id", api.GetDocumentHandler)
+	mux.HandleFunc("/questions/:id", api.GetQuestionHandler)
 
 	// authentication api
 	mux.HandleFunc("/login", authenticator.LoginHandler)
 	mux.HandleFunc("/login/callback", authenticator.CallbackHandler)
 
+	// authenticated queries
 	mux.Use(authenticator.Middleware)
 	mux.HandleFunc("/whoami", auth.WhoAmIHandler)
-
 	// insert new answer
 	mux.HandleFunc("/answers", api.PutAnswerHandler)
-	// get answer
-	mux.HandleFunc("/answers/:id", api.GetAnswerById)
-	// get answers by question
+	// put up/down votes to an answer
 	mux.HandleFunc("/answers/:id/vote", api.PostVote)
-
-	// Same api
-	mux.HandleFunc("/answers/by-question/:id", api.GetAnswersByQuestion)
-	mux.HandleFunc("/question/:id/answers", api.GetAnswersByQuestion)
-
-	// Same api
-	mux.HandleFunc("/questions/by-document/:id", api.GetQuestionsByDoc)
-	mux.HandleFunc("/documents/:id", api.GetQuestionsByDoc)
-
 	// insert new doc and quesions
-	mux.HandleFunc("/documents", api.PutDocument)
-	// get all doc's questions
-	mux.HandleFunc("/question/:id", api.GetQuestionsById)
+	mux.HandleFunc("/documents", api.PutDocumentHandler)
 
 	slog.Info("listening at", "address", config.Listen)
 	err = http.ListenAndServe(config.Listen, mux)

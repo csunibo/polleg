@@ -8,8 +8,13 @@ import (
 	"github.com/kataras/muxie"
 )
 
+type Document struct {
+	ID        string     `json:"id"`
+	Questions []Question `json:"questions"`
+}
+
 // Insert a new document with all the questions
-func PutDocument(res http.ResponseWriter, req *http.Request) {
+func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method PUT is used
 	if req.Method != http.MethodPut {
 		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
@@ -40,33 +45,25 @@ func PutDocument(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	util.WriteJson(res, util.Res{Res: "OK"})
+	util.WriteJson(res, Document{
+		ID:        data.Document,
+		Questions: questions,
+	})
 }
 
-// Get a question by an ID
-func GetQuestionsById(res http.ResponseWriter, req *http.Request) {
+// Given a document's ID, return all the questions
+func GetDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method GET is used
 	if req.Method != http.MethodGet {
 		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
+	var questions []Question
 	db := util.GetDb()
-	docId := muxie.GetParam(res, "id")
-	var docs Question
-	db.Where("id = ?", docId).Find(&docs)
-	util.WriteJson(res, docs)
-}
-
-// Given a document's ID, return all the question
-func GetQuestionsByDoc(res http.ResponseWriter, req *http.Request) {
-	// Check method GET is used
-	if req.Method != http.MethodGet {
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
-		return
-	}
-	var docs []Question
-	db := util.GetDb()
-	docId := muxie.GetParam(res, "id")
-	db.Where("document = ?", docId).Find(&docs)
-	util.WriteJson(res, docs)
+	docID := muxie.GetParam(res, "id")
+	db.Where(Question{Document: docID}).Find(&questions)
+	util.WriteJson(res, Document{
+		ID:        docID,
+		Questions: questions,
+	})
 }
