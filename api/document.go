@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/csunibo/polleg/auth"
 	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
 )
@@ -25,6 +26,11 @@ type PutDocumentRequest struct {
 
 // Insert a new document with all the questions
 func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
+	// only members of the staff can add a document
+	if !auth.GetAdmin(req) {
+		util.WriteError(res, http.StatusForbidden, "you are not admin")
+		return
+	}
 	// Check method PUT is used
 	if req.Method != http.MethodPut {
 		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
