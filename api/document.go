@@ -12,7 +12,7 @@ import (
 func PutDocument(res http.ResponseWriter, req *http.Request) {
 	// Check method PUT is used
 	if req.Method != http.MethodPut {
-		_ = util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
 	db := util.GetDb()
@@ -45,15 +45,25 @@ func PutDocument(res http.ResponseWriter, req *http.Request) {
 
 // Get a question by an ID
 func GetQuestionsById(res http.ResponseWriter, req *http.Request) {
-	var docs Question
+	// Check method GET is used
+	if req.Method != http.MethodGet {
+		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		return
+	}
 	db := util.GetDb()
 	docId := muxie.GetParam(res, "id")
+	var docs Question
 	db.Where("id = ?", docId).Find(&docs)
 	util.WriteJson(res, docs)
 }
 
 // Given a document's ID, return all the question
 func GetQuestionsByDoc(res http.ResponseWriter, req *http.Request) {
+	// Check method GET is used
+	if req.Method != http.MethodGet {
+		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		return
+	}
 	var docs []Question
 	db := util.GetDb()
 	docId := muxie.GetParam(res, "id")

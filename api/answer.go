@@ -19,7 +19,7 @@ type AnswerObj struct {
 func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method PUT is used
 	if req.Method != http.MethodPut {
-		_ = util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
 	db := util.GetDb()
@@ -72,6 +72,11 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 
 // Get an answer by an ID
 func GetAnswerById(res http.ResponseWriter, req *http.Request) {
+	// Check method GET is used
+	if req.Method != http.MethodGet {
+		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		return
+	}
 	db := util.GetDb()
 	id := muxie.GetParam(res, "id")
 
@@ -88,6 +93,11 @@ func GetAnswerById(res http.ResponseWriter, req *http.Request) {
 
 // Given a question ID, find all the answers
 func GetAnswersByQuestion(res http.ResponseWriter, req *http.Request) {
+	// Check method GET is used
+	if req.Method != http.MethodGet {
+		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		return
+	}
 	db := util.GetDb()
 	qid := muxie.GetParam(res, "id")
 

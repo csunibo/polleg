@@ -15,6 +15,11 @@ type VoteObj struct {
 
 // Insert a vote on a answer
 func PostVote(res http.ResponseWriter, req *http.Request) {
+	// Check method POST is used
+	if req.Method != http.MethodPost {
+		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		return
+	}
 	db := util.GetDb()
 	user := auth.GetUser(req)
 	id := muxie.GetParam(res, "id")
