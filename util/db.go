@@ -15,7 +15,8 @@ func ConnectDb(ConnStr string) error {
 	)
 	var err error
 	db, err = gorm.Open(postgres.Open(ConnStr), &gorm.Config{
-		Logger: gormLogger,
+		Logger:      gormLogger,
+		PrepareStmt: true, // optimize raw queries
 	})
 	if err != nil {
 		return fmt.Errorf("failed to open db connection: %w", err)
