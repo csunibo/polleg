@@ -91,7 +91,7 @@ func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var question Question
-	if err := db.Preload("Answers").Preload("Answers.Replies").First(&question, uint(qID)).Error; err != nil {
+	if err := db.Preload("Answers", db.Where("parent is null")).Preload("Answers.Replies").First(&question, uint(qID)).Error; err != nil {
 		util.WriteError(res, http.StatusInternalServerError, "Question not found")
 		return
 	}
