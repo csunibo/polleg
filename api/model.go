@@ -6,10 +6,14 @@ import (
 )
 
 type Answer struct {
-	gorm.Model
-	Document string `json:"document"`
-	Question uint   `json:"question" gorm:"foreignKey:Question;references:ID"`
-	Parent   *uint  `json:"parent"`
+	// taken from from gorm.Model, so we can json strigify properly
+	ID        uint           `json:"id" gorm:"primarykey"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+
+	Question uint  `json:"question" gorm:"foreignKey:Question;references:ID"`
+	Parent   *uint `json:"-"`
 
 	User      string   `json:"user"`
 	Content   string   `json:"content"`
@@ -19,7 +23,12 @@ type Answer struct {
 }
 
 type Question struct {
-	gorm.Model
+	// taken from from gorm.Model, so we can json strigify properly
+	ID        uint           `json:"id" gorm:"primarykey"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+
 	Document string   `json:"document"`
 	Start    uint32   `json:"start"`
 	End      uint32   `json:"end"`
