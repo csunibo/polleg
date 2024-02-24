@@ -37,8 +37,7 @@ type DocReq struct {
 }
 
 type Vote struct {
-	gorm.Model
-	Answer uint   `json:"answer"`
-	User   string `json:"user"`
+	Answer uint   `json:"answer" gorm:"primaryKey"`
+	User   string `json:"user" gorm:"primaryKey"`
 	Vote   int8   `json:"vote"`
 }
