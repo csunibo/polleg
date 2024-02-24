@@ -18,6 +18,27 @@ type PutAnswerRequest struct {
 	Content  string `json:"content"`
 }
 
+var (
+	VOTES_QUERY = fmt.Sprintf(`
+  select   votes.answer,
+           count(case votes.vote when %d then 1 else null end) as upvotes,
+           count(case votes.vote when %d then 1 else null end) as downvotes
+  from     votes
+  group by answer
+`, VoteUp, VoteDown)
+	ANSWERS_QUERY = fmt.Sprintf(`
+  select   *
+  from     answers
+  join     (%s) on answer = answers.id
+  where    answers.parent is NULL and answers.question = ? 
+`, VOTES_QUERY)
+	REPLIES_QUERY = `
+  select   *
+  from     answers
+  where    answers.parent IN ?
+`
+)
+
 // Insert a new answer under a question
 func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method PUT is used
@@ -91,11 +112,35 @@ func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var question Question
-	if err := db.Preload("Answers", db.Where("parent is null")).Preload("Answers.Replies").First(&question, uint(qID)).Error; err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "Question not found")
+	if err := db.First(&question, uint(qID)).Error; err != nil {
+		slog.Error("question not found", "err", err)
+		util.WriteError(res, http.StatusInternalServerError, "question not found")
 		return
 	}
+	var answers []Answer
+	if err := db.Raw(ANSWERS_QUERY, question.ID).Scan(&answers).Error; err != nil {
+		slog.Error("could not fetch answers", "err", err)
+		util.WriteError(res, http.StatusInternalServerError, "could not fetch answers")
+		return
+	}
+	answersIDs := []uint{}
+	answersIndex := map[uint]int{}
+	for i, answer := range answers {
+		answersIDs = append(answersIDs, answer.ID)
+		answersIndex[answer.ID] = i
+	}
+	var replies []Answer
+	if err := db.Raw(REPLIES_QUERY, answersIDs).Scan(&replies).Error; err != nil {
+		slog.Error("could not fetch replies", "err", err)
+		util.WriteError(res, http.StatusInternalServerError, "could not fetch replies")
+		return
+	}
+	for _, reply := range replies {
+		index := answersIndex[*reply.Parent]
+		answers[index].Replies = append(answers[index].Replies, reply)
+	}
 
+	question.Answers = answers
 	if err := util.WriteJson(res, question); err != nil {
 		slog.Error("error while serializing the question", "err", err)
 	}

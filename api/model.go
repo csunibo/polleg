@@ -17,9 +17,10 @@ type Answer struct {
 
 	User      string   `json:"user"`
 	Content   string   `json:"content"`
-	Upvotes   uint32   `json:"upvotes"`
-	Downvotes uint32   `json:"downvotes"`
+	Upvotes   uint32   `json:"upvotes" gorm:"->"`
+	Downvotes uint32   `json:"downvotes" gorm:"->"`
 	Replies   []Answer `json:"replies" gorm:"foreignKey:Parent;references:ID"`
+	Votes     []Vote   `json:"-" gorm:"foreignKey:Answer;references:ID"`
 }
 
 type Question struct {
