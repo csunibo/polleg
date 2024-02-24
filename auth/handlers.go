@@ -62,6 +62,7 @@ func (a *Authenticator) CallbackHandler(res http.ResponseWriter, req *http.Reque
 		"token": token,
 		"user":  user,
 	}
+	fmt.Println(token)
 
 	tokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(a.signingKey)
 	if err != nil {
@@ -117,7 +118,7 @@ func (a *Authenticator) LoginHandler(res http.ResponseWriter, req *http.Request)
 }
 
 func (a *Authenticator) CheckMembership(token string, login string) (bool, error) {
-	reqHttp, err := http.NewRequest(http.MethodGet, GithubMemberURL.String(), nil)
+	reqHttp, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", GithubMemberURL.String(), login), nil)
 	if err != nil {
 		return false, fmt.Errorf("could not construct GitHub's user request: %w", err)
 	}
@@ -127,7 +128,7 @@ func (a *Authenticator) CheckMembership(token string, login string) (bool, error
 	if err != nil {
 		return false, fmt.Errorf("could not send GitHub's user request: %w", err)
 	}
-	var githubRes []GithubMemberUserResponse
+	var githubRes GithubMemberUserResponse
 	err = json.NewDecoder(resHttp.Body).Decode(&githubRes)
 	if err != nil {
 		return false, fmt.Errorf("could not parse GitHub's response: %w", err)
@@ -138,10 +139,8 @@ func (a *Authenticator) CheckMembership(token string, login string) (bool, error
 		return false, fmt.Errorf("could not close body: %w", err)
 	}
 
-	for i := range githubRes {
-		if githubRes[i].Login == login {
-			return true, nil
-		}
+	if githubRes.Message != "" {
+		return true, nil
 	}
 
 	return false, nil

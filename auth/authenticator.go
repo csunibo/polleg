@@ -10,14 +10,14 @@ import (
 )
 
 const (
-	SCOPES = "read:user,user:email"
+	SCOPES = "read:user,user:email,read:org,read:members"
 )
 
 var (
 	GithubAuthorizeURL, _   = url.Parse("https://github.com/login/oauth/authorize")
 	GithubAccessTokenURL, _ = url.Parse("https://github.com/login/oauth/access_token")
 	GithubUserURL, _        = url.Parse("https://api.github.com/user")
-	GithubMemberURL, _      = url.Parse("https://api.github.com/orgs/csunibo/members")
+	GithubMemberURL, _      = url.Parse("https://api.github.com/orgs/csunibo/memberships/")
 	client                  = http.DefaultClient
 )
 
@@ -121,13 +121,8 @@ type GithubUserResponse struct {
 	Url       string `json:"url"`
 }
 type GithubMemberUserResponse struct {
-	Id        int    `json:"id"`
-	Name      string `json:"name"`
-	AvatarUrl string `json:"avatar_url"`
-	Email     string `json:"email"`
-	Login     string `json:"login"`
-	Url       string `json:"url"`
-	IsAdmin   bool   `json:"site_admin"`
+	Message string `json:"message,omitempty"`
+	Role    string `json:"role,omitempty"`
 }
 
 func (a *Authenticator) getUser(token string, res http.ResponseWriter, req *http.Request) (*User, error) {
