@@ -28,7 +28,14 @@ type Config struct {
 	OAuthSessionDuration time.Duration `toml:"oauth_session_duration"`
 }
 
-var config Config
+var (
+	// Default config values
+	config = Config{
+		Listen:               "0.0.0.0:3000",
+		BaseURL:              "http://localhost:3000",
+		OAuthSessionDuration: time.Hour * 12,
+	}
+)
 
 func main() {
 	err := loadConfig()
