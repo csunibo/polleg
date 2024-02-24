@@ -13,3 +13,8 @@ func GetUser(req *http.Request) User {
 	}
 	return user
 }
+
+func GetAdmin(req *http.Request) bool {
+	user := GetUser(req)
+	return user.Admin
+}

@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -44,7 +46,7 @@ func (a *Authenticator) CallbackHandler(res http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	user, err := a.getUser(token)
+	user, err := a.getUser(token, res, req)
 	if err != nil {
 		_ = util.WriteError(res, http.StatusInternalServerError, "could not fetch the user data from GitHub")
 		slog.Error("error while fetching user data from github", "error", err)
@@ -112,4 +114,35 @@ func (a *Authenticator) LoginHandler(res http.ResponseWriter, req *http.Request)
 	// TODO: add the state query parameter to protect against CSRF
 
 	http.Redirect(res, req, redirectURL.String(), http.StatusSeeOther)
+}
+
+func (a *Authenticator) CheckMembership(token string, login string) (bool, error) {
+	reqHttp, err := http.NewRequest(http.MethodGet, GithubMemberURL.String(), nil)
+	if err != nil {
+		return false, fmt.Errorf("could not construct GitHub's user request: %w", err)
+	}
+	reqHttp.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	reqHttp.Header.Set("Accept", "application/vnd.github+json")
+	resHttp, err := client.Do(reqHttp)
+	if err != nil {
+		return false, fmt.Errorf("could not send GitHub's user request: %w", err)
+	}
+	var githubRes []GithubMemberUserResponse
+	err = json.NewDecoder(resHttp.Body).Decode(&githubRes)
+	if err != nil {
+		return false, fmt.Errorf("could not parse GitHub's response: %w", err)
+	}
+
+	err = resHttp.Body.Close()
+	if err != nil {
+		return false, fmt.Errorf("could not close body: %w", err)
+	}
+
+	for i := range githubRes {
+		if githubRes[i].Login == login {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

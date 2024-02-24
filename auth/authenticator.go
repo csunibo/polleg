@@ -17,6 +17,7 @@ var (
 	GithubAuthorizeURL, _   = url.Parse("https://github.com/login/oauth/authorize")
 	GithubAccessTokenURL, _ = url.Parse("https://github.com/login/oauth/access_token")
 	GithubUserURL, _        = url.Parse("https://api.github.com/user")
+	GithubMemberURL, _      = url.Parse("https://api.github.com/orgs/csunibo/members")
 	client                  = http.DefaultClient
 )
 
@@ -52,6 +53,7 @@ type User struct {
 	AvatarUrl string `json:"avatarUrl"`
 	Name      string `json:"name"`
 	Email     string `json:"email"`
+	Admin     bool   `json:"admin"`
 }
 
 type GithubData struct {
@@ -118,28 +120,42 @@ type GithubUserResponse struct {
 	Login     string `json:"login"`
 	Url       string `json:"url"`
 }
+type GithubMemberUserResponse struct {
+	Id        int    `json:"id"`
+	Name      string `json:"name"`
+	AvatarUrl string `json:"avatar_url"`
+	Email     string `json:"email"`
+	Login     string `json:"login"`
+	Url       string `json:"url"`
+	IsAdmin   bool   `json:"site_admin"`
+}
 
-func (a *Authenticator) getUser(token string) (*User, error) {
-	req, err := http.NewRequest(http.MethodGet, GithubUserURL.String(), nil)
+func (a *Authenticator) getUser(token string, res http.ResponseWriter, req *http.Request) (*User, error) {
+	reqHttp, err := http.NewRequest(http.MethodGet, GithubUserURL.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not construct GitHub's user request: %w", err)
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	res, err := client.Do(req)
+	reqHttp.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	resHttp, err := client.Do(reqHttp)
 	if err != nil {
 		return nil, fmt.Errorf("could not send GitHub's user request: %w", err)
 	}
 
 	var githubRes GithubUserResponse
-	err = json.NewDecoder(res.Body).Decode(&githubRes)
+	err = json.NewDecoder(resHttp.Body).Decode(&githubRes)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse GitHub's response: %w", err)
 	}
 
-	err = res.Body.Close()
+	err = resHttp.Body.Close()
 	if err != nil {
 		return nil, fmt.Errorf("could not close body: %w", err)
+	}
+
+	admin, err := a.CheckMembership(token, githubRes.Login)
+	if err != nil {
+		return nil, fmt.Errorf("could not check admin: %w", err)
 	}
 
 	return &User{
@@ -147,5 +163,6 @@ func (a *Authenticator) getUser(token string) (*User, error) {
 		AvatarUrl: githubRes.AvatarUrl,
 		Name:      githubRes.Name,
 		Email:     githubRes.Email,
+		Admin:     admin,
 	}, nil
 }
