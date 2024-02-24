@@ -71,7 +71,14 @@ func GetDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	var questions []Question
 	db := util.GetDb()
 	docID := muxie.GetParam(res, "id")
-	db.Where(Question{Document: docID}).Find(&questions)
+	if err := db.Where(Question{Document: docID}).Find(&questions).Error; err != nil {
+		util.WriteError(res, http.StatusInternalServerError, "db query failed")
+		return
+	}
+	if len(questions) == 0 {
+		util.WriteError(res, http.StatusInternalServerError, "Document not found")
+		return
+	}
 	util.WriteJson(res, Document{
 		ID:        docID,
 		Questions: questions,

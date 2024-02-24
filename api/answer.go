@@ -92,7 +92,7 @@ func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 
 	var question Question
 	if err := db.First(&question, uint(qID)).Error; err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "Answer not found")
+		util.WriteError(res, http.StatusInternalServerError, "Question not found")
 		return
 	}
 
