@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/csunibo/stackunibo/util"
+	"github.com/csunibo/polleg/util"
 	"github.com/golang-jwt/jwt/v5"
 )
 

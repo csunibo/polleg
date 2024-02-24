@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/csunibo/stackunibo/util"
+	"github.com/csunibo/polleg/util"
 )
 
 func WhoAmIHandler(res http.ResponseWriter, req *http.Request) {

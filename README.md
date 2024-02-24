@@ -1,4 +1,4 @@
-# `stackunibo`
+# `polleg`
 
 
 Progetto che permette agli studenti di rispondere agli esercizi delle prove d'esame direttamente sul sito di csunibo.
@@ -6,5 +6,5 @@ Progetto che permette agli studenti di rispondere agli esercizi delle prove d'es
 ## Usage
 
 ```golang
-go run cmd/stackunibo.go
+go run cmd/polleg.go
 ```

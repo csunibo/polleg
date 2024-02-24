@@ -1,15 +1,16 @@
-package answers
+package api
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/csunibo/stackunibo/util"
+	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
 )
 
-func NewDocument(res http.ResponseWriter, req *http.Request) {
-	// Check method put is used
+// Insert a new document with all the questions
+func PutDocument(res http.ResponseWriter, req *http.Request) {
+	// Check method PUT is used
 	if req.Method != http.MethodPut {
 		_ = util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
@@ -42,6 +43,7 @@ func NewDocument(res http.ResponseWriter, req *http.Request) {
 	util.WriteJson(res, util.Res{Res: "OK"})
 }
 
+// Get a question by an ID
 func GetQuestionsById(res http.ResponseWriter, req *http.Request) {
 	var docs Question
 	db := util.GetDb()
@@ -50,20 +52,11 @@ func GetQuestionsById(res http.ResponseWriter, req *http.Request) {
 	util.WriteJson(res, docs)
 }
 
+// Given a document's ID, return all the question
 func GetQuestionsByDoc(res http.ResponseWriter, req *http.Request) {
 	var docs []Question
 	db := util.GetDb()
 	docId := muxie.GetParam(res, "id")
 	db.Where("document = ?", docId).Find(&docs)
 	util.WriteJson(res, docs)
-}
-
-func GetAnswerOfQuestion(res http.ResponseWriter, req *http.Request) {
-	db := util.GetDb()
-	docId := muxie.GetParam(res, "id")
-
-	var ans []Answer
-	db.Where("question = ?", docId).Find(&ans)
-
-	util.WriteJson(res, ans)
 }

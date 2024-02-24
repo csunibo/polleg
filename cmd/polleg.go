@@ -11,9 +11,9 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/exp/slog"
 
-	"github.com/csunibo/stackunibo/answers"
-	"github.com/csunibo/stackunibo/auth"
-	"github.com/csunibo/stackunibo/util"
+	"github.com/csunibo/polleg/api"
+	"github.com/csunibo/polleg/auth"
+	"github.com/csunibo/polleg/util"
 )
 
 type Config struct {
@@ -56,7 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 	db := util.GetDb()
-	if err := db.AutoMigrate(&answers.Question{}, &answers.Answer{}, &answers.Vote{}); err != nil {
+	if err := db.AutoMigrate(&api.Question{}, &api.Answer{}, &api.Vote{}); err != nil {
 		slog.Error("AutoMigrate failed", "err", err)
 		os.Exit(1)
 	}
@@ -81,21 +81,24 @@ func main() {
 	mux.HandleFunc("/whoami", auth.WhoAmIHandler)
 
 	// insert new answer
-	mux.HandleFunc("/answers", answers.PutAnswerHandler)
+	mux.HandleFunc("/answers", api.PutAnswerHandler)
 	// get answer
-	mux.HandleFunc("/answers/:id", answers.GetAnswerById)
+	mux.HandleFunc("/answers/:id", api.GetAnswerById)
 	// get answers by question
-	mux.HandleFunc("/answers/by-question/:question", answers.GetAnswersByQuestion)
-	mux.HandleFunc("/answers/:id/vote", answers.PostVote)
+	mux.HandleFunc("/answers/:id/vote", api.PostVote)
+
+	// Same api
+	mux.HandleFunc("/answers/by-question/:id", api.GetAnswersByQuestion)
+	mux.HandleFunc("/question/:id/answers", api.GetAnswersByQuestion)
+
+	// Same api
+	mux.HandleFunc("/questions/by-document/:id", api.GetQuestionsByDoc)
+	mux.HandleFunc("/documents/:id", api.GetQuestionsByDoc)
 
 	// insert new doc and quesions
-	mux.HandleFunc("/documents", answers.NewDocument)
+	mux.HandleFunc("/documents", api.PutDocument)
 	// get all doc's questions
-	mux.HandleFunc("/documents/:id", answers.GetQuestionsByDoc)
-	mux.HandleFunc("/questions/by-document/:id", answers.GetQuestionsByDoc)
-
-	mux.HandleFunc("/question/:id", answers.GetQuestionsById)
-	mux.HandleFunc("/question/:id/answers", answers.GetAnswerOfQuestion)
+	mux.HandleFunc("/question/:id", api.GetQuestionsById)
 
 	slog.Info("listening at", "address", config.Listen)
 	err = http.ListenAndServe(config.Listen, mux)

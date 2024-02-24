@@ -1,4 +1,4 @@
-module github.com/csunibo/stackunibo
+module github.com/csunibo/polleg
 
 go 1.20
 

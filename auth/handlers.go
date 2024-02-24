@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/csunibo/stackunibo/util"
+	"github.com/csunibo/polleg/util"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/exp/slog"
 )

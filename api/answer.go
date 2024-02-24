@@ -1,12 +1,11 @@
-package answers
+package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
-	"github.com/csunibo/stackunibo/auth"
-	"github.com/csunibo/stackunibo/util"
+	"github.com/csunibo/polleg/auth"
+	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
 )
 
@@ -16,20 +15,18 @@ type AnswerObj struct {
 	Content  string `json:"content"`
 }
 
+// Insert a new answer under a question
 func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
-	fmt.Println(req)
-	// Check method put is used
+	// Check method PUT is used
 	if req.Method != http.MethodPut {
 		_ = util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
-
 	db := util.GetDb()
 	user := auth.GetUser(req)
 
 	// Declare a new Person struct.
 	var ans AnswerObj
-
 	err := json.NewDecoder(req.Body).Decode(&ans)
 	if err != nil {
 		util.WriteError(res, http.StatusBadRequest, "decode error")
@@ -68,9 +65,12 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	util.WriteJson(res, util.Res{Res: "OK"})
+	if err = util.WriteJson(res, util.Res{Res: "OK"}); err != nil {
+		util.WriteError(res, http.StatusInternalServerError, "couldn't write response")
+	}
 }
 
+// Get an answer by an ID
 func GetAnswerById(res http.ResponseWriter, req *http.Request) {
 	db := util.GetDb()
 	id := muxie.GetParam(res, "id")
@@ -81,90 +81,23 @@ func GetAnswerById(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	util.WriteJson(res, ans)
+	if err := util.WriteJson(res, ans); err != nil {
+		util.WriteError(res, http.StatusInternalServerError, "couldn't write response")
+	}
 }
 
-type VoteObj struct {
-	Vote int8 `json:"vote"`
-}
-
-func PostVote(res http.ResponseWriter, req *http.Request) {
-	db := util.GetDb()
-	user := auth.GetUser(req)
-	id := muxie.GetParam(res, "id")
-
-	// Declare a new Person struct.
-	var vote VoteObj
-
-	err := json.NewDecoder(req.Body).Decode(&vote)
-	if err != nil {
-		util.WriteError(res, http.StatusBadRequest, "decode error")
-		return
-	}
-
-	if vote.Vote != 1 && vote.Vote != -1 {
-		util.WriteError(res, http.StatusBadRequest, "body 'vote' must be either 1 or -1")
-		return
-	}
-
-	var ans Answer
-	if err = db.First(&ans, id).Error; err != nil {
-		util.WriteError(res, http.StatusBadRequest, "no question associated with request id")
-		return
-	}
-
-	var voteRecord []Vote
-	db.Where("votes.user = ? AND votes.answer = ?", user.Username, ans.ID).Find(&voteRecord)
-	fmt.Println(voteRecord)
-	if len(voteRecord) == 0 {
-		db.Create(&Vote{
-			User:   user.Username,
-			Answer: ans.ID,
-			Vote:   vote.Vote,
-		})
-
-		if vote.Vote > 0 {
-			ans.Upvotes += 1
-		} else {
-			ans.Downvotes += 1
-		}
-		db.Save(&ans)
-		return
-	}
-
-	if voteRecord[0].Vote == vote.Vote {
-		if voteRecord[0].Vote > 0 {
-			ans.Upvotes -= 1
-		} else {
-			ans.Downvotes -= 1
-		}
-		db.Save(&ans)
-		db.Delete(&voteRecord[0])
-		return
-	}
-
-	voteRecord[0].Vote = vote.Vote
-	if voteRecord[0].Vote > 0 {
-		ans.Upvotes += 1
-		ans.Downvotes -= 1
-	} else {
-		ans.Upvotes -= 1
-		ans.Downvotes += 1
-	}
-	db.Save(&ans)
-	db.Save(&voteRecord[0])
-	util.WriteJson(res, util.Res{Res: "OK"})
-}
-
+// Given a question ID, find all the answers
 func GetAnswersByQuestion(res http.ResponseWriter, req *http.Request) {
 	db := util.GetDb()
-	qid := muxie.GetParam(res, "question")
+	qid := muxie.GetParam(res, "id")
 
 	var ans []Answer
 	if err := db.Where("question = ?", qid).Find(&ans).Error; err != nil {
-		util.WriteError(res, http.StatusBadRequest, "Answer not found")
+		util.WriteError(res, http.StatusInternalServerError, "Answer not found")
 		return
 	}
 
-	util.WriteJson(res, ans)
+	if err := util.WriteJson(res, ans); err != nil {
+		util.WriteError(res, http.StatusInternalServerError, "couldn't write response")
+	}
 }
