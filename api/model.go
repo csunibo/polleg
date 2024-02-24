@@ -2,6 +2,7 @@ package api
 
 import (
 	"gorm.io/gorm"
+	"time"
 )
 
 type Answer struct {
@@ -25,19 +26,13 @@ type Question struct {
 	Answers  []Answer `json:"answers" gorm:"foreignKey:Question;references:ID"`
 }
 
-type Coord struct {
-	gorm.Model
-	Start uint32 `json:"start"`
-	End   uint32 `json:"end"`
-}
-
-type DocReq struct {
-	Document string  `json:"document"`
-	Coords   []Coord `json:"coords"`
-}
-
 type Vote struct {
 	Answer uint   `json:"answer" gorm:"primaryKey"`
 	User   string `json:"user" gorm:"primaryKey"`
 	Vote   int8   `json:"vote"`
+
+	// taken from from gorm.Model
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }

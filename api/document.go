@@ -13,6 +13,16 @@ type Document struct {
 	Questions []Question `json:"questions"`
 }
 
+type Coord struct {
+	Start uint32 `json:"start"`
+	End   uint32 `json:"end"`
+}
+
+type PutDocumentRequest struct {
+	ID     string  `json:"id"`
+	Coords []Coord `json:"coords"`
+}
+
 // Insert a new document with all the questions
 func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method PUT is used
@@ -23,7 +33,7 @@ func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	db := util.GetDb()
 
 	// decode data
-	var data DocReq
+	var data PutDocumentRequest
 	if err := json.NewDecoder(req.Body).Decode(&data); err != nil {
 		_ = util.WriteError(res, http.StatusBadRequest, "couldn't decode body")
 		return
@@ -33,7 +43,7 @@ func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	var questions []Question
 	for _, coord := range data.Coords {
 		q := Question{
-			Document: data.Document,
+			Document: data.ID,
 			Start:    coord.Start,
 			End:      coord.End,
 		}
@@ -46,7 +56,7 @@ func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	util.WriteJson(res, Document{
-		ID:        data.Document,
+		ID:        data.ID,
 		Questions: questions,
 	})
 }
