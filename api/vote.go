@@ -74,7 +74,7 @@ func PostVote(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 	} else if v.Vote == VoteNone {
-		if err := db.Delete(&Vote{Answer: ans.ID, User: user.Username}).Error; err != nil {
+		if err := db.Unscoped().Delete(&Vote{Answer: ans.ID, User: user.Username}).Error; err != nil {
 			util.WriteError(res, http.StatusBadRequest, "could not delete the previous vote")
 			return
 		}
