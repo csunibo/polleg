@@ -74,9 +74,9 @@ func GetDocumentHandler(res http.ResponseWriter, req *http.Request) {
 		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
-	var questions []Question
 	db := util.GetDb()
 	docID := muxie.GetParam(res, "id")
+	var questions []Question
 	if err := db.Where(Question{Document: docID}).Find(&questions).Error; err != nil {
 		util.WriteError(res, http.StatusInternalServerError, "db query failed")
 		return

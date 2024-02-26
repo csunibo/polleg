@@ -12,6 +12,7 @@ import (
 	"golang.org/x/exp/slog"
 
 	"github.com/csunibo/polleg/api"
+	"github.com/csunibo/polleg/api/proposal"
 	"github.com/csunibo/polleg/auth"
 	"github.com/csunibo/polleg/util"
 )
@@ -56,7 +57,8 @@ func main() {
 		os.Exit(1)
 	}
 	db := util.GetDb()
-	if err := db.AutoMigrate(&api.Question{}, &api.Answer{}, &api.Vote{}); err != nil {
+	err = db.AutoMigrate(&proposal.Proposal{}, &api.Question{}, &api.Answer{}, &api.Vote{})
+	if err != nil {
 		slog.Error("AutoMigrate failed", "err", err)
 		os.Exit(1)
 	}
@@ -89,6 +91,11 @@ func main() {
 	mux.HandleFunc("/answers/:id/vote", api.PostVote)
 	// insert new doc and quesions
 	mux.HandleFunc("/documents", api.PutDocumentHandler)
+
+	// proposal managers
+	mux.HandleFunc("/proposals", proposal.ProposalHandler)
+	mux.HandleFunc("/proposals/:id", proposal.ProposalByIdHandler)
+	mux.HandleFunc("/proposals/document/:id", proposal.ProposalByDocumentHandler)
 
 	slog.Info("listening at", "address", config.Listen)
 	err = http.ListenAndServe(config.Listen, mux)
