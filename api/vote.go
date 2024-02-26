@@ -25,8 +25,39 @@ type PutVoteRequest struct {
 	Vote VoteValue `json:"vote"`
 }
 
+// get given vote to an answer
+func GetUserVote(res http.ResponseWriter, req *http.Request) {
+	// Check method GET is used
+	if req.Method != http.MethodGet {
+		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		return
+	}
+	db := util.GetDb()
+	user := auth.GetUser(req)
+
+	rawAnsID := muxie.GetParam(res, "id")
+	ansID, err := strconv.ParseUint(rawAnsID, 10, 0)
+	if err != nil {
+		util.WriteError(res, http.StatusBadRequest, "invalid answer id")
+		return
+	}
+
+	var vote Vote
+	if err = db.First(&vote, "answer = ? and \"user\" = ?", ansID, user.Username).Error; err != nil {
+		util.WriteError(res, http.StatusBadRequest, "the referenced vote does not exist")
+		return
+	}
+	if err = util.WriteJson(res, vote); err != nil {
+		slog.Error("error while serializing the vote", "err", err)
+	}
+}
+
 // Insert a vote on a answer
 func PostVote(res http.ResponseWriter, req *http.Request) {
+	if req.Method == http.MethodGet {
+		GetUserVote(res, req)
+		return
+	}
 	// Check method POST is used
 	if req.Method != http.MethodPost {
 		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")

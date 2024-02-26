@@ -119,7 +119,6 @@ func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	var answers []Answer
-	fmt.Println(ANSWERS_QUERY)
 	if err := db.Raw(ANSWERS_QUERY, question.ID).Scan(&answers).Error; err != nil {
 		slog.Error("could not fetch answers", "err", err)
 		util.WriteError(res, http.StatusInternalServerError, "could not fetch answers")
