@@ -24,6 +24,7 @@ var (
            count(case votes.vote when %d then 1 else null end) as upvotes,
            count(case votes.vote when %d then 1 else null end) as downvotes
   from     votes
+  where deleted_at is NULL
   group by answer
 `, VoteUp, VoteDown)
 	ANSWERS_QUERY = fmt.Sprintf(`
