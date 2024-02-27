@@ -92,6 +92,7 @@ func main() {
 	// insert new doc and quesions
 	mux.HandleFunc("/documents", api.PutDocumentHandler)
 
+	mux.HandleFunc("/answers/:id", api.DelAnswerHandler)
 	// proposal managers
 	mux.HandleFunc("/proposals", proposal.ProposalHandler)
 	mux.HandleFunc("/proposals/:id", proposal.ProposalByIdHandler)

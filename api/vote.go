@@ -110,7 +110,7 @@ func PostVote(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 	} else {
-		util.WriteError(res, http.StatusBadRequest, "the vote value must be either 1 or -1")
+		util.WriteError(res, http.StatusBadRequest, "the vote value must be either 1, -1 or 0")
 		return
 	}
 

@@ -31,12 +31,12 @@ var (
   select   *
   from     answers
   full join     (%s) on answer = answers.id
-  where    answers.parent is NULL and answers.question = ? 
+  where    deleted_at is NULL and answers.parent is NULL and answers.question = ? 
 `, VOTES_QUERY)
 	REPLIES_QUERY = `
   select   *
   from     answers
-  where    answers.parent IN ?
+  where    deleted_at is NULL and answers.parent IN ?
 `
 )
 
@@ -143,6 +143,46 @@ func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 
 	question.Answers = answers
 	if err := util.WriteJson(res, question); err != nil {
+		slog.Error("error while serializing the question", "err", err)
+	}
+}
+
+func DelAnswerHandler(res http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodDelete {
+		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		return
+	}
+
+	user := auth.GetUser(req)
+	db := util.GetDb()
+	rawAnsID := muxie.GetParam(res, "id")
+
+	aID, err := strconv.ParseUint(rawAnsID, 10, 0)
+	if err != nil {
+		util.WriteError(res, http.StatusBadRequest, "invalid question id")
+		return
+	}
+
+	var ans Answer
+	if err := db.First(&ans, uint(aID)).Error; err != nil {
+		slog.Error("answer not found", "err", err)
+		util.WriteError(res, http.StatusInternalServerError, "answer not found")
+		return
+	}
+
+	if !user.Admin || ans.User != user.Username {
+		slog.Error("you are not an admin or the owner of the answer", "err", err)
+		util.WriteError(res, http.StatusInternalServerError, "you are not the owner of the answer")
+		return
+	}
+
+	if err := db.Delete(&ans).Error; err != nil {
+		slog.Error("something went wrong", "err", err)
+		util.WriteError(res, http.StatusInternalServerError, "something went wrong")
+		return
+	}
+
+	if err := util.WriteJson(res, ans); err != nil {
 		slog.Error("error while serializing the question", "err", err)
 	}
 }
