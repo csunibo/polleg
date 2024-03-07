@@ -81,6 +81,7 @@ func main() {
 	// authentication api
 	mux.HandleFunc("/login", authenticator.LoginHandler)
 	mux.HandleFunc("/login/callback", authenticator.CallbackHandler)
+	mux.HandleFunc("/logout", authenticator.LogoutHandler)
 
 	// authenticated queries
 	mux.Use(authenticator.Middleware)

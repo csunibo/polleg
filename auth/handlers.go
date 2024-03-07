@@ -117,6 +117,32 @@ func (a *Authenticator) LoginHandler(res http.ResponseWriter, req *http.Request)
 	http.Redirect(res, req, redirectURL.String(), http.StatusSeeOther)
 }
 
+func (a *Authenticator) LogoutHandler(res http.ResponseWriter, req *http.Request) {
+	// Get the client redirect url
+	clientRedirectURL := req.URL.Query().Get("redirect_uri")
+	if clientRedirectURL == "" {
+		_ = util.WriteError(res, http.StatusBadRequest, "specify a redirect_uri url param")
+		return
+	}
+
+	// Create the url query
+	query := url.Values{}
+	query.Set("redirect_uri", clientRedirectURL)
+
+	cookie := http.Cookie{
+		Name:     "auth",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		Secure:   false,
+		SameSite: http.SameSiteNoneMode,
+		HttpOnly: true,
+		Path:     "/",
+	}
+
+	http.SetCookie(res, &cookie)
+	http.Redirect(res, req, clientRedirectURL, http.StatusSeeOther)
+}
+
 func (a *Authenticator) CheckMembership(token string, login string) (bool, error) {
 	reqHttp, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", GithubMemberURL.String(), login), nil)
 	if err != nil {
