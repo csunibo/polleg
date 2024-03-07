@@ -170,9 +170,9 @@ func DelAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if !user.Admin || ans.User != user.Username {
+	if !user.Admin && ans.User != user.Username {
 		slog.Error("you are not an admin or the owner of the answer", "err", err)
-		util.WriteError(res, http.StatusInternalServerError, "you are not the owner of the answer")
+		util.WriteError(res, http.StatusInternalServerError, "you are not an admin or the owner of the answer")
 		return
 	}
 
