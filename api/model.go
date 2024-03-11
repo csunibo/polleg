@@ -14,7 +14,7 @@ type Answer struct {
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 
 	Question uint  `json:"question" gorm:"foreignKey:Question;references:ID"`
-	Parent   *uint `json:"-"`
+	Parent   *uint `json:"parent"`
 
 	User      string   `json:"user"`
 	Content   string   `json:"content"`
