@@ -11,7 +11,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.1.1
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	gorm.io/driver/postgres v1.5.7
-	gorm.io/gorm v1.25.7
+	gorm.io/gorm v1.25.10
 )
 
 require (
