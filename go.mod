@@ -8,7 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/kataras/muxie v1.1.2
 	github.com/orandin/slog-gorm v1.1.0
-	github.com/pelletier/go-toml/v2 v2.1.1
+	github.com/pelletier/go-toml/v2 v2.2.2
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.10
