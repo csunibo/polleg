@@ -32,8 +32,8 @@ type Config struct {
 var (
 	// Default config values
 	config = Config{
-		Listen:               "0.0.0.0:3000",
-		BaseURL:              "http://localhost:3000",
+		Listen:               "0.0.0.0:3001",
+		BaseURL:              "http://localhost:3001",
 		OAuthSessionDuration: time.Hour * 12,
 	}
 )
@@ -64,11 +64,9 @@ func main() {
 	}
 
 	authenticator := auth.NewAuthenticator(&auth.Config{
-		BaseURL:      baseURL,
-		ClientID:     config.OAuthClientID,
-		ClientSecret: config.OAuthClientSecret,
-		SigningKey:   []byte(config.OAuthSigningKey),
-		Expiration:   config.OAuthSessionDuration,
+		BaseURL:    baseURL,
+		SigningKey: []byte(config.OAuthSigningKey),
+		Expiration: config.OAuthSessionDuration,
 	})
 
 	mux := muxie.NewMux()
@@ -78,14 +76,8 @@ func main() {
 	mux.HandleFunc("/documents/:id", api.GetDocumentHandler)
 	mux.HandleFunc("/questions/:id", api.GetQuestionHandler)
 
-	// authentication api
-	mux.HandleFunc("/login", authenticator.LoginHandler)
-	mux.HandleFunc("/login/callback", authenticator.CallbackHandler)
-	mux.HandleFunc("/logout", authenticator.LogoutHandler)
-
 	// authenticated queries
 	mux.Use(authenticator.Middleware)
-	mux.HandleFunc("/whoami", auth.WhoAmIHandler)
 	// insert new answer
 	mux.HandleFunc("/answers", api.PutAnswerHandler)
 	// put up/down votes to an answer
