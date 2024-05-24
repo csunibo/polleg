@@ -38,6 +38,14 @@ var (
 	}
 )
 
+// @title			Polleg API
+// @version		1.0
+// @description	This is the backend API for Polleg that allows unibo students to answer exam exercises directly on the csunibo website
+// @contact.name	Gabriele Genovese
+// @contact.email	gabriele.genovese2@studio.unibo.it
+// @license.name	AGPL-3.0
+// @license.url	https://www.gnu.org/licenses/agpl-3.0.en.html
+// @BasePath		/
 func main() {
 	err := loadConfig()
 	if err != nil {

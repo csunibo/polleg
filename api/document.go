@@ -24,7 +24,14 @@ type PutDocumentRequest struct {
 	Coords []Coord `json:"coords"`
 }
 
-// Insert a new document with all the questions
+// @Summary		Insert a new document
+// @Description	Insert a new document with all the questions initialised
+// @Tags			document
+// @Param			docRequest	body	PutDocumentRequest	true	"Doc request body"
+// @Produce		json
+// @Success		200	{object}	Document
+// @Failure		400	{object}	util.ApiError
+// @Router			/documents [put]
 func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// only members of the staff can add a document
 	if !auth.GetAdmin(req) {
@@ -67,7 +74,14 @@ func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	})
 }
 
-// Given a document's ID, return all the questions
+// @Summary		Get a document's divisions
+// @Description	Given a document's ID, return all the questions
+// @Tags			document
+// @Param			id	path	string	true	"document id"
+// @Produce		json
+// @Success		200	{object}	Document
+// @Failure		400	{object}	util.ApiError
+// @Router			/documents/{id} [get]
 func GetDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method GET is used
 	if req.Method != http.MethodGet {

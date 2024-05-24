@@ -40,7 +40,14 @@ var (
 `
 )
 
-// Insert a new answer under a question
+// @Summary		Insert a new answer
+// @Description	Insert a new answer under a question
+// @Tags			answer
+// @Param			answerReq	body	PutAnswerRequest	true	"Answer data to insert"
+// @Produce		json
+// @Success		200	{object}	Answer
+// @Failure		400	{object}	util.ApiError
+// @Router			/answers [put]
 func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method PUT is used
 	if req.Method != http.MethodPut {
@@ -97,7 +104,14 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// Given a question ID, return the question and all its answers
+// @Summary		Get all answers given a question
+// @Description	Given a question ID, return the question and all its answers
+// @Tags			question
+// @Param			id	path	string	true	"Answer id"
+// @Produce		json
+// @Success		200	{array}		Answer
+// @Failure		400	{object}	util.ApiError
+// @Router			/questions/{id} [get]
 func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method GET is used
 	if req.Method != http.MethodGet {
@@ -147,6 +161,14 @@ func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// @Summary		Delete an answer
+// @Description	Given an andwer ID, delete the answer
+// @Tags			answer
+// @Param			id	path	string	true	"Answer id"
+// @Produce		json
+// @Success		200	{object}	Answer
+// @Failure		400	{object}	util.ApiError
+// @Router			/answers/{id} [delete]
 func DelAnswerHandler(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodDelete {
 		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")

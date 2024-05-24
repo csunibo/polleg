@@ -52,7 +52,14 @@ func GetUserVote(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// Insert a vote on a answer
+//	@Summary		Insert a vote
+//	@Description	Insert a new vote on a answer
+//	@Tags			vote
+//	@Produce		json
+//	@Param			id	path		string	true	"code query parameter"
+//	@Success		200	{object}	Vote
+//	@Failure		400	{object}	util.ApiError
+//	@Router			/answer/{id}/vote [post]
 func PostVote(res http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodGet {
 		GetUserVote(res, req)
