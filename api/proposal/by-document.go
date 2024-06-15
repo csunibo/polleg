@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/api"
-	"github.com/csunibo/polleg/auth"
 	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
 	"golang.org/x/exp/slog"
@@ -46,7 +46,7 @@ func getProposalByDocumentHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func deleteProposalByDocumentHandler(res http.ResponseWriter, req *http.Request) {
-	if !auth.GetAdmin(req) {
+	if !middleware.GetAdmin(req) {
 		util.WriteError(res, http.StatusForbidden, "you are not admin")
 		return
 	}

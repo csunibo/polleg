@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/csunibo/polleg/auth"
+	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
 )
@@ -34,7 +34,7 @@ type PutDocumentRequest struct {
 // @Router			/documents [put]
 func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// only members of the staff can add a document
-	if !auth.GetAdmin(req) {
+	if !middleware.GetAdmin(req) {
 		util.WriteError(res, http.StatusForbidden, "you are not admin")
 		return
 	}

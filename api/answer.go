@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/csunibo/polleg/auth"
+	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
 	"golang.org/x/exp/slog"
@@ -55,7 +55,7 @@ func PutAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	db := util.GetDb()
-	user := auth.GetUser(req)
+	user := middleware.GetUser(req)
 
 	var ans PutAnswerRequest
 	err := json.NewDecoder(req.Body).Decode(&ans)
@@ -175,7 +175,7 @@ func DelAnswerHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user := auth.GetUser(req)
+	user := middleware.GetUser(req)
 	db := util.GetDb()
 	rawAnsID := muxie.GetParam(res, "id")
 

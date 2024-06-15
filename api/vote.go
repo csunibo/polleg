@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/csunibo/polleg/auth"
+	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
 	"gorm.io/gorm/clause"
@@ -33,7 +33,7 @@ func GetUserVote(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	db := util.GetDb()
-	user := auth.GetUser(req)
+	user := middleware.GetUser(req)
 
 	rawAnsID := muxie.GetParam(res, "id")
 	ansID, err := strconv.ParseUint(rawAnsID, 10, 0)
@@ -52,14 +52,14 @@ func GetUserVote(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-//	@Summary		Insert a vote
-//	@Description	Insert a new vote on a answer
-//	@Tags			vote
-//	@Produce		json
-//	@Param			id	path		string	true	"code query parameter"
-//	@Success		200	{object}	Vote
-//	@Failure		400	{object}	util.ApiError
-//	@Router			/answer/{id}/vote [post]
+// @Summary		Insert a vote
+// @Description	Insert a new vote on a answer
+// @Tags			vote
+// @Produce		json
+// @Param			id	path		string	true	"code query parameter"
+// @Success		200	{object}	Vote
+// @Failure		400	{object}	util.ApiError
+// @Router			/answer/{id}/vote [post]
 func PostVote(res http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodGet {
 		GetUserVote(res, req)
@@ -71,7 +71,7 @@ func PostVote(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	db := util.GetDb()
-	user := auth.GetUser(req)
+	user := middleware.GetUser(req)
 
 	rawAnsID := muxie.GetParam(res, "id")
 	ansID, err := strconv.ParseUint(rawAnsID, 10, 0)

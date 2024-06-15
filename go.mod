@@ -1,8 +1,6 @@
 module github.com/csunibo/polleg
 
-go 1.21.0
-
-toolchain go1.22.0
+go 1.22.3
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
@@ -10,13 +8,14 @@ require (
 	github.com/orandin/slog-gorm v1.3.2
 	github.com/pelletier/go-toml/v2 v2.2.2
 	github.com/swaggo/swag v1.16.3
-	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
+	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.10
 )
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
+	github.com/csunibo/auth v0.1.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/spec v0.21.0 // indirect

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/csunibo/polleg/auth"
+	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
 	"golang.org/x/exp/slog"
@@ -43,7 +43,7 @@ func getProposalByIdHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func deleteProposalByIdHandler(res http.ResponseWriter, req *http.Request) {
-	if !auth.GetAdmin(req) {
+	if !middleware.GetAdmin(req) {
 		util.WriteError(res, http.StatusForbidden, "you are not admin")
 		return
 	}
