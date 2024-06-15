@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/csunibo/auth/pkg/httputil"
 	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
@@ -35,12 +36,12 @@ type PutDocumentRequest struct {
 func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// only members of the staff can add a document
 	if !middleware.GetAdmin(req) {
-		util.WriteError(res, http.StatusForbidden, "you are not admin")
+		httputil.WriteError(res, http.StatusForbidden, "you are not admin")
 		return
 	}
 	// Check method PUT is used
 	if req.Method != http.MethodPut {
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		httputil.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
 	db := util.GetDb()
@@ -48,7 +49,7 @@ func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// decode data
 	var data PutDocumentRequest
 	if err := json.NewDecoder(req.Body).Decode(&data); err != nil {
-		_ = util.WriteError(res, http.StatusBadRequest, "couldn't decode body")
+		httputil.WriteError(res, http.StatusBadRequest, "couldn't decode body")
 		return
 	}
 
@@ -64,11 +65,11 @@ func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	if err := db.Save(questions).Error; err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "couldn't create questions")
+		httputil.WriteError(res, http.StatusInternalServerError, "couldn't create questions")
 		return
 	}
 
-	util.WriteJson(res, Document{
+	httputil.WriteData(res, http.StatusOK, Document{
 		ID:        data.ID,
 		Questions: questions,
 	})
@@ -85,21 +86,21 @@ func PutDocumentHandler(res http.ResponseWriter, req *http.Request) {
 func GetDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method GET is used
 	if req.Method != http.MethodGet {
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		httputil.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
 	db := util.GetDb()
 	docID := muxie.GetParam(res, "id")
 	var questions []Question
 	if err := db.Where(Question{Document: docID}).Find(&questions).Error; err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "db query failed")
+		httputil.WriteError(res, http.StatusInternalServerError, "db query failed")
 		return
 	}
 	if len(questions) == 0 {
-		util.WriteError(res, http.StatusInternalServerError, "Document not found")
+		httputil.WriteError(res, http.StatusInternalServerError, "Document not found")
 		return
 	}
-	util.WriteJson(res, Document{
+	httputil.WriteData(res, http.StatusOK, Document{
 		ID:        docID,
 		Questions: questions,
 	})

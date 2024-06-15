@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/csunibo/auth/pkg/httputil"
 	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/api"
 	"github.com/csunibo/polleg/util"
@@ -18,28 +19,28 @@ func ProposalByDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	case http.MethodGet:
 		getProposalByDocumentHandler(res, req)
 	default:
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		httputil.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 	}
 }
 
 func getProposalByDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method GET is used
 	if req.Method != http.MethodGet {
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		httputil.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
 	db := util.GetDb()
 	docID := muxie.GetParam(res, "id")
 	var questions []Proposal
 	if err := db.Where(api.Question{Document: docID}).Find(&questions).Error; err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "db query failed")
+		httputil.WriteError(res, http.StatusInternalServerError, "db query failed")
 		return
 	}
 	if len(questions) == 0 {
-		util.WriteError(res, http.StatusInternalServerError, "Document not found")
+		httputil.WriteError(res, http.StatusInternalServerError, "Document not found")
 		return
 	}
-	util.WriteJson(res, DocumentProposal{
+	httputil.WriteData(res, http.StatusOK, DocumentProposal{
 		ID:        docID,
 		Questions: questions,
 	})
@@ -47,11 +48,11 @@ func getProposalByDocumentHandler(res http.ResponseWriter, req *http.Request) {
 
 func deleteProposalByDocumentHandler(res http.ResponseWriter, req *http.Request) {
 	if !middleware.GetAdmin(req) {
-		util.WriteError(res, http.StatusForbidden, "you are not admin")
+		httputil.WriteError(res, http.StatusForbidden, "you are not admin")
 		return
 	}
 	if req.Method != http.MethodDelete {
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		httputil.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
 	db := util.GetDb()
@@ -63,11 +64,9 @@ func deleteProposalByDocumentHandler(res http.ResponseWriter, req *http.Request)
 		fmt.Println()
 		slog.Error("db query failed", "err", err)
 		fmt.Println()
-		util.WriteError(res, http.StatusInternalServerError, "db query failed")
+		httputil.WriteError(res, http.StatusInternalServerError, "db query failed")
 		return
 	}
 
-	if err := util.WriteJson(res, proposal); err != nil {
-		slog.Error("error while serializing the proposal", "err", err)
-	}
+	httputil.WriteData(res, http.StatusOK, proposal)
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/exp/slog"
 
+	"github.com/csunibo/auth/pkg/httputil"
 	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/api"
 	"github.com/csunibo/polleg/api/proposal"
@@ -59,7 +60,7 @@ func main() {
 	}
 
 	mux := muxie.NewMux()
-	mux.Use(util.NewCorsMiddleware(config.ClientURLs, true, mux))
+	mux.Use(httputil.NewCorsMiddleware(config.ClientURLs, true, mux))
 
 	// authentication-less read-only queries
 	mux.HandleFunc("/documents/:id", api.GetDocumentHandler)
