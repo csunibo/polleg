@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/csunibo/auth/pkg/httputil"
 	"github.com/csunibo/polleg/api"
 	"github.com/csunibo/polleg/util"
 )
@@ -20,7 +21,7 @@ func ProposalHandler(res http.ResponseWriter, req *http.Request) {
 	case http.MethodGet:
 		getAllProposalHandler(res, req)
 	default:
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		httputil.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 	}
 }
 
@@ -31,7 +32,7 @@ func putProposal(res http.ResponseWriter, req *http.Request) {
 	// decode data
 	var data api.PutDocumentRequest
 	if err := json.NewDecoder(req.Body).Decode(&data); err != nil {
-		_ = util.WriteError(res, http.StatusBadRequest, "couldn't decode body")
+		httputil.WriteError(res, http.StatusBadRequest, "couldn't decode body")
 		return
 	}
 
@@ -47,11 +48,11 @@ func putProposal(res http.ResponseWriter, req *http.Request) {
 	}
 
 	if err := db.Save(questions).Error; err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "couldn't create questions")
+		httputil.WriteError(res, http.StatusInternalServerError, "couldn't create questions")
 		return
 	}
 
-	util.WriteJson(res, DocumentProposal{
+	httputil.WriteData(res, http.StatusOK, DocumentProposal{
 		ID:        data.ID,
 		Questions: questions,
 	})
@@ -70,11 +71,11 @@ func getAllProposalHandler(res http.ResponseWriter, req *http.Request) {
 	db := util.GetDb()
 	var questions []Proposal
 	if err := db.Where(Proposal{}).Find(&questions).Error; err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "db query failed")
+		httputil.WriteError(res, http.StatusInternalServerError, "db query failed")
 		return
 	}
 	if len(questions) == 0 {
-		util.WriteError(res, http.StatusInternalServerError, "No proposal found")
+		httputil.WriteError(res, http.StatusInternalServerError, "No proposal found")
 		return
 	}
 
@@ -102,9 +103,9 @@ func getAllProposalHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	if len(docProps) == 0 {
-		util.WriteError(res, http.StatusInternalServerError, "Proposal not found")
+		httputil.WriteError(res, http.StatusInternalServerError, "Proposal not found")
 		return
 	}
 
-	util.WriteJson(res, docProps)
+	httputil.WriteData(res, http.StatusOK, docProps)
 }

@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/csunibo/polleg/auth"
+	"github.com/csunibo/auth/pkg/httputil"
+	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/util"
 	"github.com/kataras/muxie"
-	"golang.org/x/exp/slog"
 )
 
 func ProposalByIdHandler(res http.ResponseWriter, req *http.Request) {
@@ -17,52 +17,50 @@ func ProposalByIdHandler(res http.ResponseWriter, req *http.Request) {
 	case http.MethodGet:
 		getProposalByIdHandler(res, req)
 	default:
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		httputil.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 	}
 }
 
 func getProposalByIdHandler(res http.ResponseWriter, req *http.Request) {
 	// Check method GET is used
 	if req.Method != http.MethodGet {
-		util.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
+		httputil.WriteError(res, http.StatusMethodNotAllowed, "invalid method")
 		return
 	}
 	db := util.GetDb()
 	proposalID := muxie.GetParam(res, "id")
 	propID, err := strconv.ParseUint(proposalID, 10, 0)
 	if err != nil {
-		util.WriteError(res, http.StatusBadRequest, "invalid answer id")
+		httputil.WriteError(res, http.StatusBadRequest, "invalid answer id")
 		return
 	}
 	var props Proposal
 	if err := db.Where(Proposal{ID: propID}).Take(&props).Error; err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "Not found")
+		httputil.WriteError(res, http.StatusInternalServerError, "Not found")
 		return
 	}
-	util.WriteJson(res, props)
+	httputil.WriteData(res, http.StatusOK, props)
 }
 
 func deleteProposalByIdHandler(res http.ResponseWriter, req *http.Request) {
-	if !auth.GetAdmin(req) {
-		util.WriteError(res, http.StatusForbidden, "you are not admin")
+	if !middleware.GetAdmin(req) {
+		httputil.WriteError(res, http.StatusForbidden, "you are not admin")
 		return
 	}
 	db := util.GetDb()
 	proposalID := muxie.GetParam(res, "id")
 	propID, err := strconv.ParseUint(proposalID, 10, 0)
 	if err != nil {
-		util.WriteError(res, http.StatusBadRequest, "invalid answer id")
+		httputil.WriteError(res, http.StatusBadRequest, "invalid answer id")
 		return
 	}
 
 	proposal := Proposal{ID: propID}
 
 	if err := db.Delete(&Proposal{}, propID).Error; err != nil {
-		util.WriteError(res, http.StatusInternalServerError, "db query failed")
+		httputil.WriteError(res, http.StatusInternalServerError, "db query failed")
 		return
 	}
 
-	if err := util.WriteJson(res, proposal); err != nil {
-		slog.Error("error while serializing the proposal", "err", err)
-	}
+	httputil.WriteData(res, http.StatusOK, proposal)
 }

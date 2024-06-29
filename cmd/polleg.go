@@ -3,51 +3,47 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
-	"time"
 
 	"github.com/kataras/muxie"
 	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/exp/slog"
 
+	"github.com/csunibo/auth/pkg/httputil"
+	"github.com/csunibo/auth/pkg/middleware"
 	"github.com/csunibo/polleg/api"
 	"github.com/csunibo/polleg/api/proposal"
-	"github.com/csunibo/polleg/auth"
 	"github.com/csunibo/polleg/util"
 )
 
 type Config struct {
 	Listen     string   `toml:"listen"`
-	BaseURL    string   `toml:"base_url"`
 	ClientURLs []string `toml:"client_urls"`
 
-	DbURI                string        `toml:"db_uri" required:"true"`
-	OAuthClientID        string        `toml:"oauth_client_id" required:"true"`
-	OAuthClientSecret    string        `toml:"oauth_client_secret" required:"true"`
-	OAuthSigningKey      string        `toml:"oauth_signing_key" required:"true"`
-	OAuthSessionDuration time.Duration `toml:"oauth_session_duration"`
+	DbURI   string `toml:"db_uri" required:"true"`
+	AuthURI string `toml:"auth_uri" required:"true"`
 }
 
 var (
 	// Default config values
 	config = Config{
-		Listen:               "0.0.0.0:3000",
-		BaseURL:              "http://localhost:3000",
-		OAuthSessionDuration: time.Hour * 12,
+		Listen:  "0.0.0.0:3001",
+		AuthURI: "http://localhost:3000",
 	}
 )
 
+// @title			Polleg API
+// @version		1.0
+// @description	This is the backend API for Polleg that allows unibo students to answer exam exercises directly on the csunibo website
+// @contact.name	Gabriele Genovese
+// @contact.email	gabriele.genovese2@studio.unibo.it
+// @license.name	AGPL-3.0
+// @license.url	https://www.gnu.org/licenses/agpl-3.0.en.html
+// @BasePath		/
 func main() {
 	err := loadConfig()
 	if err != nil {
 		slog.Error("failed to load config", "err", err)
-		os.Exit(1)
-	}
-
-	baseURL, err := url.Parse(config.BaseURL)
-	if err != nil {
-		slog.Error("failed to parse baseURL", "err", err)
 		os.Exit(1)
 	}
 
@@ -63,29 +59,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	authenticator := auth.NewAuthenticator(&auth.Config{
-		BaseURL:      baseURL,
-		ClientID:     config.OAuthClientID,
-		ClientSecret: config.OAuthClientSecret,
-		SigningKey:   []byte(config.OAuthSigningKey),
-		Expiration:   config.OAuthSessionDuration,
-	})
-
 	mux := muxie.NewMux()
-	mux.Use(util.NewCorsMiddleware(config.ClientURLs, true, mux))
+	mux.Use(httputil.NewCorsMiddleware(config.ClientURLs, true, mux))
 
 	// authentication-less read-only queries
 	mux.HandleFunc("/documents/:id", api.GetDocumentHandler)
 	mux.HandleFunc("/questions/:id", api.GetQuestionHandler)
 
-	// authentication api
-	mux.HandleFunc("/login", authenticator.LoginHandler)
-	mux.HandleFunc("/login/callback", authenticator.CallbackHandler)
-	mux.HandleFunc("/logout", authenticator.LogoutHandler)
-
 	// authenticated queries
-	mux.Use(authenticator.Middleware)
-	mux.HandleFunc("/whoami", auth.WhoAmIHandler)
+	authMiddleware, err := middleware.NewAuthMiddleware(config.AuthURI)
+	if err != nil {
+		slog.Error("failed to create authentication middleware", "err", err)
+		os.Exit(1)
+	}
+	mux.Use(authMiddleware.Handler)
 	// insert new answer
 	mux.HandleFunc("/answers", api.PutAnswerHandler)
 	// put up/down votes to an answer
