@@ -36,7 +36,7 @@ func getProposalByIdHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	var props Proposal
 	if err := db.Where(Proposal{ID: propID}).Take(&props).Error; err != nil {
-		httputil.WriteError(res, http.StatusInternalServerError, "Not found")
+		httputil.WriteError(res, http.StatusNotFound, "Not found")
 		return
 	}
 	httputil.WriteData(res, http.StatusOK, props)

@@ -97,7 +97,7 @@ func GetDocumentHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if len(questions) == 0 {
-		httputil.WriteError(res, http.StatusInternalServerError, "Document not found")
+		httputil.WriteError(res, http.StatusNotFound, "Document not found")
 		return
 	}
 	httputil.WriteData(res, http.StatusOK, Document{

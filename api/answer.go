@@ -128,7 +128,7 @@ func GetQuestionHandler(res http.ResponseWriter, req *http.Request) {
 	var question Question
 	if err := db.First(&question, uint(qID)).Error; err != nil {
 		slog.Error("question not found", "err", err)
-		httputil.WriteError(res, http.StatusInternalServerError, "question not found")
+		httputil.WriteError(res, http.StatusNotFound, "question not found")
 		return
 	}
 	var answers []Answer
@@ -185,7 +185,7 @@ func DelAnswerHandler(res http.ResponseWriter, req *http.Request) {
 	var ans Answer
 	if err := db.First(&ans, uint(aID)).Error; err != nil {
 		slog.Error("answer not found", "err", err)
-		httputil.WriteError(res, http.StatusInternalServerError, "answer not found")
+		httputil.WriteError(res, http.StatusNotFound, "answer not found")
 		return
 	}
 

@@ -103,7 +103,7 @@ func getAllProposalHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	if len(docProps) == 0 {
-		httputil.WriteError(res, http.StatusInternalServerError, "Proposal not found")
+		httputil.WriteError(res, http.StatusNotFound, "Proposal not found")
 		return
 	}
 
