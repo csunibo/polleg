@@ -3,7 +3,7 @@ module github.com/csunibo/polleg
 go 1.22.3
 
 require (
-	github.com/csunibo/auth v0.1.0
+	github.com/csunibo/auth v0.2.0
 	github.com/kataras/muxie v1.1.2
 	github.com/orandin/slog-gorm v1.3.2
 	github.com/pelletier/go-toml/v2 v2.2.2
